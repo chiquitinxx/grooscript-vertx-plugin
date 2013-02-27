@@ -1,3 +1,4 @@
+import org.grooscript.grails.plugin.ListenerDaemon
 import org.grooscript.grails.plugin.VertxEventBus
 import org.grooscript.GrooScript
 import org.springframework.context.ApplicationContext
@@ -5,7 +6,7 @@ import org.vertx.groovy.core.Vertx
 
 class GrooscriptVertxGrailsPlugin {
     // the plugin version
-    def version = "0.1"
+    def version = "0.2.3"
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "2.2 > *"
     // resources that are excluded from plugin packaging
@@ -67,7 +68,7 @@ Automatically reload pages while developing.
 
     }
 
-    def initGrooscriptDaemon(application,eventBus) {
+    def initGrooscriptDaemon(application,applicationContext) {
 
         def source = application.config.grooscript.source
         def destination = application.config.grooscript.destination
@@ -75,17 +76,32 @@ Automatically reload pages while developing.
         def doAfter = null
 
         //If there is eventbus, on file changes, we send reload
-        if (eventBus) {
+        if (applicationContext.eventBus) {
             doAfter = { list ->
                 if (list.size()>0) {
-                    eventBus.send(VertxEventBus.CHANNEL_CHANGES,[reload:true])
+                    //sleep(100)
+                    applicationContext.grailsResourceProcessor.reloadAll()
+                    applicationContext.eventBus.send(VertxEventBus.CHANNEL_CHANGES,[reload:true])
                 }
+            }
+
+            if (application.config.savedFiles.listener &&
+                    application.config.savedFiles.listener instanceof ArrayList) {
+                ListenerDaemon listener = new ListenerDaemon()
+                listener.sourceList = application.config.savedFiles.listener
+                listener.doAfter = { list ->
+                    if (list.size()>0) {
+                        applicationContext.grailsResourceProcessor.reloadAll()
+                        applicationContext.eventBus.send(VertxEventBus.CHANNEL_CHANGES,[reload:true])
+                    }
+                }
+                listener.start()
             }
         }
 
         //By default
         if (!options) {
-            options = [convertDependencies:false]
+            options = [classpath:'src/groovy']
         }
 
         //Start the daemon if source and destination are ok
@@ -103,12 +119,13 @@ Automatically reload pages while developing.
     def doWithApplicationContext = { applicationContext ->
         // TODO Implement post initialization spring config (optional)
 
-        if (applicationContext.containsBean('eventBus')) {
-            initGrooscriptDaemon(application,applicationContext.getBean('eventBus'))
-        } else {
-            println '\n[GrooScript-Vertx] Vert.x eventbus not started.'
-            initGrooscriptDaemon(application,null)
-        }
+        initGrooscriptDaemon(application,applicationContext)
+        //if (applicationContext.containsBean('eventBus')) {
+        //  initGrooscriptDaemon(application,applicationContext.getBean('eventBus'))
+        //} else {
+        //    println '\n[GrooScript-Vertx] Vert.x eventbus not started.'
+        //    initGrooscriptDaemon(application,null)
+        //}
 
     }
 

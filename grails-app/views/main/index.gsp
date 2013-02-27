@@ -8,10 +8,14 @@
 <head>
     <script src="../js/sockjs.js"></script>
     <script src='../js/vertxbus.js'></script>
-  <title>Title</title>
+    <script src='../js/grooscript.js'></script>
+    <link rel="stylesheet" type="text/css" href="../css/style.css">
+
+    <title>Title</title>
 </head>
 <body>
-<p>Hello page!</p>
+
+<p>Try Page.</p>
 
 <script>
 
@@ -23,6 +27,9 @@ eb.onopen = function() {
     eb.registerHandler('reloadPage', function(message) {
 
         console.log('Got message on reloadPage: ' + JSON.stringify(message));
+        if (message.reload == true) {
+            window.location.reload();
+        }
 
     });
 
@@ -31,6 +38,8 @@ eb.onopen = function() {
 
 }
 </script>
+
+<script src='../js/Message.js'></script>
 
 </body>
 </html>

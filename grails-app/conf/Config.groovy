@@ -34,7 +34,7 @@ vertx {
 }
 
 grooscript {
-    source = ['src/groovy/presenter']
+    source = ['scripts/Message.groovy']
     destination = 'web-app/js'
 }
 
@@ -47,3 +47,5 @@ modules = {
         resource url:'/js/vertxbus.js'
     }
 }
+
+savedFiles.listener = ['web-app/css']

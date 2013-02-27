@@ -22,7 +22,11 @@ class GrooScriptVertxTagLib {
 
                         eb.registerHandler('reloadPage', function(message) {
 
-                            console.log('Got message on reloadPage: ' + JSON.stringify(message));
+                            if (message.reload == true) {
+                                window.location.reload(true);
+                            }
+
+                            //console.log('Got message on reloadPage: ' + JSON.stringify(message));
 
                         });
                     }
@@ -36,7 +40,6 @@ class GrooScriptVertxTagLib {
         if (applicationContext.containsBean(VERTX_EVENTBUS_BEAN)) {
 
             def eventBus = applicationContext.getBean(VERTX_EVENTBUS_BEAN)
-
             out << r.require(module: 'vertx')
             out << r.script() {
                 out << '''
@@ -48,7 +51,11 @@ class GrooScriptVertxTagLib {
 
                         eb.registerHandler('reloadPage', function(message) {
 
-                            console.log('Got message on reloadPage: ' + JSON.stringify(message));
+                            if (message.reload == true) {
+                                window.location.reload(true);
+                            }
+
+                            //console.log('Got message on reloadPage: ' + JSON.stringify(message));
 
                         });
                     }
