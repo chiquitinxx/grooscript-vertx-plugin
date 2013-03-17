@@ -19,7 +19,7 @@ How do I setup all this things?
 
     dependencies {
         runtime 'org.vert-x:vertx-lang-groovy:1.3.1.final'
-        runtime 'org.grooscript:grooscript:0.2.2'
+        runtime 'org.grooscript:grooscript:0.2.3'
     }
 
 3.- Set Groovy files to watch to be converted with the GrooScript daemon. (optional)
@@ -65,7 +65,7 @@ And then use in your gsp:
 
 7.- Finally, in the GSP pages, if you want that page automatillay reloads, need listen to reload event from vert.x, so must add this tag:
 
-	<g:reloadPage/>
+	<grooscript:reloadPage/>
 
 ## Example
 
@@ -80,7 +80,7 @@ For example, I have used this .gsp for my tests:
     </head>
 	<body>
 		<p>Hello!</p>
-		<g:reloadPage/>
+		<grooscript:reloadPage/>
 	</body>
 	</html>
 

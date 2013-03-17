@@ -6,21 +6,29 @@ import org.vertx.groovy.core.Vertx
 
 class GrooscriptVertxGrailsPlugin {
     // the plugin version
-    def version = "0.2.3"
+    def version = "0.2.5"
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "2.2 > *"
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
-        "grails-app/views/error.gsp"
+        "grails-app/views/error.gsp",
+        "grails-app/controllers/**",
+        "grails-app/views/**",
+        "scripts/Message.groovy",
+        "web-app/css/**",
+        "web-app/js/Message.js"
     ]
 
     // TODO Fill in these fields
     def title = "Grooscript Vertx Plugin" // Headline display name of the plugin
     def author = "Jorge Franco Leza"
-    def authorEmail = "jorge.franco.leza@gmail.com"
+    def authorEmail = "grooscript@gmail.com"
     def description = '''\
-Starts conversion daemon to convert your groovy files to javascript.
-Automatically reload pages while developing.
+Starts Grooscript conversion daemon to convert your groovy files to javascript.
+Automatically reload pages while developing with Vert.x.
+GrooScript info http://grooscript.org
+Vert.x info http://vertx.io
+More info about this plugin http://github.com/chiquitinxx/grooscript-vertx-plugin/
 '''
 
     // URL to the plugin's documentation
@@ -41,14 +49,15 @@ Automatically reload pages while developing.
 //    def issueManagement = [ system: "JIRA", url: "http://jira.grails.org/browse/GPMYPLUGIN" ]
 
     // Online location of the plugin's browseable source code.
-//    def scm = [ url: "http://svn.codehaus.org/grails-plugins/" ]
+    def scm = [ url: "http://github.com/chiquitinxx/grooscript-vertx-plugin/" ]
 
     def doWithWebDescriptor = { xml ->
         // TODO Implement additions to web.xml (optional), this event occurs before
     }
 
     def doWithSpring = {
-        // TODO Implement runtime spring config (optional)
+
+        //println '****************** doWithSpring'
 
         //println 'vertx ->'+application.config.vertx
         def port = application.config.vertx.eventBus.port
@@ -116,33 +125,53 @@ Automatically reload pages while developing.
         // TODO Implement registering dynamic methods to classes (optional)
     }
 
-    def doWithApplicationContext = { applicationContext ->
-        // TODO Implement post initialization spring config (optional)
+    def oldPort
+    def oldHost
+    def oldSource
+    def oldDestination
+    def oldSavedFilesListener
 
+    def doWithApplicationContext = { applicationContext ->
+        //println '****************** doWithApplicationContext'
+        oldSource = application.config.grooscript?.source
+        oldDestination = application.config.grooscript?.destination
+        oldPort = application.config.vertx?.eventBus?.port
+        oldHost = application.config.vertx?.eventBus?.host
+        oldSavedFilesListener = application.config.savedFiles?.listener
         initGrooscriptDaemon(application,applicationContext)
-        //if (applicationContext.containsBean('eventBus')) {
-        //  initGrooscriptDaemon(application,applicationContext.getBean('eventBus'))
-        //} else {
-        //    println '\n[GrooScript-Vertx] Vert.x eventbus not started.'
-        //    initGrooscriptDaemon(application,null)
-        //}
 
     }
 
     def onChange = { event ->
-        // TODO Implement code that is executed when any artefact that this plugin is
         // watching is modified and reloaded. The event contains: event.source,
         // event.application, event.manager, event.ctx, and event.plugin.
-        println 'File changed->'+event.source
-        println 'Plugin->'+event.plugin
     }
 
     def onConfigChange = { event ->
-        // TODO Implement code that is executed when the project configuration changes.
         // The event is the same as for 'onChange'.
+
+        if (event.plugin.title == "Grooscript Vertx Plugin") {
+            //println '****************** onConfigChange'
+            if (application.config.grooscript?.source != oldSource ||
+                    application.config.grooscript?.destination != oldDestination ||
+                    application.config.vertx?.eventBus?.port != oldPort ||
+                    application.config.vertx?.eventBus?.host != oldHost ||
+                    application.config.savedFiles?.listener != oldSavedFilesListener ) {
+                println '*****************************************'
+                println '* GrooScript or Vert.x changes detected *'
+                println '*     - Must restart the server -       *'
+                println '*****************************************'
+            }
+        }
     }
 
     def onShutdown = { event ->
         // TODO Implement code that is executed when the application shuts down (optional)
+        //println '****************** onShutdown'
+        if (application.applicationContext.eventBus) {
+            println 'Closing Vert.x ...'
+            application.applicationContext.eventBus.close()
+        }
+        GrooScript.stopConversionDaemon()
     }
 }

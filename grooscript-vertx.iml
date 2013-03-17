@@ -40,11 +40,20 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="grails-2.2.0" level="application" />
+    <orderEntry type="library" name="grails-2.2.1" level="application" />
     <orderEntry type="module-library" exported="">
       <library name="Grails User Library (grooscript-vertx)">
         <CLASSES>
           <root url="file://$MODULE_DIR$/lib" />
+          <root url="jar://$USER_HOME$/.grails/ivy-cache/org.ow2.asm/asm-analysis/jars/asm-analysis-4.0.jar!/" />
+          <root url="jar://$USER_HOME$/.grails/ivy-cache/org.ow2.asm/asm-util/jars/asm-util-4.0.jar!/" />
+          <root url="jar://$USER_HOME$/.grails/ivy-cache/org.ow2.asm/asm-commons/jars/asm-commons-4.0.jar!/" />
+          <root url="jar://$USER_HOME$/.grails/ivy-cache/org.ow2.asm/asm/jars/asm-4.0.jar!/" />
+          <root url="jar://$USER_HOME$/.grails/ivy-cache/org.ow2.asm/asm-tree/jars/asm-tree-4.0.jar!/" />
+          <root url="jar://$USER_HOME$/.grails/ivy-cache/org.codehaus.groovy/groovy/jars/groovy-2.0.7.jar!/" />
+          <root url="jar://$USER_HOME$/.grails/ivy-cache/org.codehaus.jsr166-mirror/jsr166y/jars/jsr166y-1.7.0.jar!/" />
+          <root url="jar://$USER_HOME$/.grails/ivy-cache/org.codehaus.gpars/gpars/jars/gpars-1.0.0.jar!/" />
+          <root url="jar://$USER_HOME$/.grails/ivy-cache/org.grooscript/grooscript/jars/grooscript-0.2.3.jar!/" />
           <root url="jar://$USER_HOME$/.grails/ivy-cache/org.vert-x/vertx-platform/jars/vertx-platform-1.3.1.final.jar!/" />
           <root url="jar://$USER_HOME$/.grails/ivy-cache/com.hazelcast/hazelcast/jars/hazelcast-2.4.1.jar!/" />
           <root url="jar://$USER_HOME$/.grails/ivy-cache/org.codehaus.jackson/jackson-mapper-asl/jars/jackson-mapper-asl-1.9.4.jar!/" />
@@ -52,15 +61,6 @@
           <root url="jar://$USER_HOME$/.grails/ivy-cache/io.netty/netty/bundles/netty-3.5.9.Final.jar!/" />
           <root url="jar://$USER_HOME$/.grails/ivy-cache/org.vert-x/vertx-core/jars/vertx-core-1.3.1.final.jar!/" />
           <root url="jar://$USER_HOME$/.grails/ivy-cache/org.vert-x/vertx-lang-groovy/jars/vertx-lang-groovy-1.3.1.final.jar!/" />
-          <root url="jar://$USER_HOME$/.grails/ivy-cache/org.codehaus.jsr166-mirror/jsr166y/jars/jsr166y-1.7.0.jar!/" />
-          <root url="jar://$USER_HOME$/.grails/ivy-cache/org.codehaus.gpars/gpars/jars/gpars-1.0.0.jar!/" />
-          <root url="jar://$USER_HOME$/.grails/ivy-cache/org.ow2.asm/asm-analysis/jars/asm-analysis-4.0.jar!/" />
-          <root url="jar://$USER_HOME$/.grails/ivy-cache/org.ow2.asm/asm-util/jars/asm-util-4.0.jar!/" />
-          <root url="jar://$USER_HOME$/.grails/ivy-cache/org.ow2.asm/asm-commons/jars/asm-commons-4.0.jar!/" />
-          <root url="jar://$USER_HOME$/.grails/ivy-cache/org.ow2.asm/asm/jars/asm-4.0.jar!/" />
-          <root url="jar://$USER_HOME$/.grails/ivy-cache/org.ow2.asm/asm-tree/jars/asm-tree-4.0.jar!/" />
-          <root url="jar://$USER_HOME$/.grails/ivy-cache/org.codehaus.groovy/groovy/jars/groovy-2.1.1.jar!/" />
-          <root url="jar://$USER_HOME$/.grails/ivy-cache/org.grooscript/grooscript/jars/grooscript-0.2.2.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

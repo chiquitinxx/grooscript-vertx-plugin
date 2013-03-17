@@ -1,6 +1,5 @@
 package org.grooscript.grails.plugin
 
-import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.vertx.groovy.core.Vertx
 import org.vertx.groovy.core.eventbus.EventBus
 import org.vertx.groovy.core.http.HttpServer
@@ -16,13 +15,14 @@ class VertxEventBus {
 
     Vertx vertx
     def EventBus eventBus
+    HttpServer httpServer
     def host
     def port
 
     VertxEventBus (int port,String host) {
 
         vertx = Vertx.newVertx(port,host)
-        HttpServer httpServer = vertx.createHttpServer()
+        httpServer = vertx.createHttpServer()
 
         def config = ["prefix": "/eventbus"]
         def inboundPermitted = []
@@ -77,5 +77,9 @@ class VertxEventBus {
 
     def addChannelHandler(String channel,Closure handler) {
         eventBus.registerHandler(channel,handler)
+    }
+
+    def close() {
+        httpServer.close()
     }
 }

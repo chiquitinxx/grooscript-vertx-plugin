@@ -8,7 +8,7 @@ log4j = {
     //    console name:'stdout', layout:pattern(conversionPattern: '%c{2} %m%n')
     //}
 
-    debug 'org.vertx'
+    error 'org.vertx'
     info 'org.grails.plugin.grooscript-vertx'
 
     error  'org.codehaus.groovy.grails.web.servlet',  //  controllers
@@ -28,7 +28,7 @@ log4j = {
 
 vertx {
     eventBus {
-        port = 8085
+        port = 8087
         //host = 'localhost'
     }
 }

@@ -1,8 +1,8 @@
 package org.grooscript.grails.plugin
 
 import groovyx.gpars.agent.Agent
-
 import static groovyx.gpars.GParsPool.withPool
+import static groovyx.gpars.dataflow.Dataflow.task
 
 /**
  * User: jorgefrancoleza
@@ -10,10 +10,14 @@ import static groovyx.gpars.GParsPool.withPool
  */
 class ListenerDaemon {
 
+    def static final REST_TIME = 500
+
     def sourceList
     def doAfter = null
 
     def dates = [:]
+    def continueTask = false
+    def actualTask
 
     /**
      * Start the daemon
@@ -21,20 +25,30 @@ class ListenerDaemon {
      */
     def start() {
         if (sourceList) {
-            Thread.start {
-                while (true) {
+            continueTask = true
+            actualTask = task {
+                while (continueTask) {
                     def list = work()
-                    sleep(500)
-                    if (doAfter) {
+                    sleep(REST_TIME)
+                    if (doAfter && doAfter instanceof Closure) {
                         doAfter(list)
                     }
                 }
-                println('Listener Terminated.')
+
             }
             println('Listener Started.')
         } else {
             println('Listener need sourceList to run.')
         }
+    }
+
+    def stop() {
+        if (actualTask) {
+            continueTask = false
+            actualTask.join()
+            println('Listener Terminated.')
+        }
+
     }
 
     def work() {

@@ -1,26 +1,27 @@
-<plugin name='grooscript-vertx' version='0.2.3' grailsVersion='2.2 &gt; *'>
+<plugin name='grooscript-vertx' version='0.2.5' grailsVersion='2.2 &gt; *'>
   <author>Jorge Franco Leza</author>
-  <authorEmail>jorge.franco.leza@gmail.com</authorEmail>
+  <authorEmail>grooscript@gmail.com</authorEmail>
   <title>Grooscript Vertx Plugin</title>
-  <description>Starts conversion daemon to convert your groovy files to javascript.
-Automatically reload pages while developing.
+  <description>Starts Grooscript conversion daemon to convert your groovy files to javascript.
+Automatically reload pages while developing with Vert.x.
+GrooScript info http://grooscript.org
+Vert.x info http://vertx.io
+More info about this plugin http://github.com/chiquitinxx/grooscript-vertx-plugin/
 </description>
   <documentation>http://grails.org/plugin/grooscript-vertx</documentation>
   <type>GrooscriptVertxGrailsPlugin</type>
   <resources>
     <resource>GrooScriptVertxResources</resource>
-    <resource>grooscript.vertx.MainController</resource>
     <resource>org.grooscript.grails.plugin.GrooScriptVertxTagLib</resource>
   </resources>
   <repositories>
     <repository name='grailsCentral' url='http://grails.org/plugins' />
     <repository name='mavenCentral' url='http://repo1.maven.org/maven2/' />
-    <repository name='http://oss.sonatype.org/content/repositories/snapshots/' url='http://oss.sonatype.org/content/repositories/snapshots/' />
   </repositories>
   <dependencies>
     <compile>
       <dependency group='org.vert-x' name='vertx-lang-groovy' version='1.3.1.final' />
-      <dependency group='org.grooscript' name='grooscript' version='0.2.2' />
+      <dependency group='org.grooscript' name='grooscript' version='0.2.3' />
     </compile>
   </dependencies>
   <plugins />
