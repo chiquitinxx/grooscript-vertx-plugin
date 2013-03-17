@@ -79,32 +79,39 @@ More info about this plugin http://github.com/chiquitinxx/grooscript-vertx-plugi
 
     def initGrooscriptDaemon(application,applicationContext) {
 
-        def source = application.config.grooscript.source
-        def destination = application.config.grooscript.destination
-        def options = application.config.grooscript.options
+        def source = application.config.grooscript?.source
+        def destination = application.config.grooscript?.destination
+        def options = application.config.grooscript?.options
         def doAfter = null
 
         //If there is eventbus, on file changes, we send reload
         if (applicationContext.eventBus) {
+
+            //Only 1 listener can be up
+            applicationContext.eventBus.stopListener()
+
+            def afterChanges = application.config.vertx?.listener?.afterChanges
+            def listenerSource = application.config.vertx?.listener?.source
+
             doAfter = { list ->
                 if (list.size()>0) {
-                    //sleep(100)
                     applicationContext.grailsResourceProcessor.reloadAll()
                     applicationContext.eventBus.send(VertxEventBus.CHANNEL_CHANGES,[reload:true])
                 }
             }
 
-            if (application.config.savedFiles.listener &&
-                    application.config.savedFiles.listener instanceof ArrayList) {
+            if (listenerSource && listenerSource instanceof List) {
                 ListenerDaemon listener = new ListenerDaemon()
-                listener.sourceList = application.config.savedFiles.listener
+                listener.sourceList = listenerSource
                 listener.doAfter = { list ->
-                    if (list.size()>0) {
-                        applicationContext.grailsResourceProcessor.reloadAll()
-                        applicationContext.eventBus.send(VertxEventBus.CHANNEL_CHANGES,[reload:true])
+                    if (afterChanges) {
+                        afterChanges(list)
                     }
+                    doAfter(list)
                 }
-                listener.start()
+
+                //Set the listener in eventbus
+                applicationContext.eventBus.startListener(listener)
             }
         }
 
@@ -129,7 +136,8 @@ More info about this plugin http://github.com/chiquitinxx/grooscript-vertx-plugi
     def oldHost
     def oldSource
     def oldDestination
-    def oldSavedFilesListener
+    def oldListenerSource
+    def oldListenerAfterChanges
 
     def doWithApplicationContext = { applicationContext ->
         //println '****************** doWithApplicationContext'
@@ -137,7 +145,8 @@ More info about this plugin http://github.com/chiquitinxx/grooscript-vertx-plugi
         oldDestination = application.config.grooscript?.destination
         oldPort = application.config.vertx?.eventBus?.port
         oldHost = application.config.vertx?.eventBus?.host
-        oldSavedFilesListener = application.config.savedFiles?.listener
+        oldListenerSource = application.config.vertx?.listener?.source
+        oldListenerAfterChanges = application.config.vertx?.listener?.afterChanges
         initGrooscriptDaemon(application,applicationContext)
 
     }
@@ -156,7 +165,8 @@ More info about this plugin http://github.com/chiquitinxx/grooscript-vertx-plugi
                     application.config.grooscript?.destination != oldDestination ||
                     application.config.vertx?.eventBus?.port != oldPort ||
                     application.config.vertx?.eventBus?.host != oldHost ||
-                    application.config.savedFiles?.listener != oldSavedFilesListener ) {
+                    application.config.vertx?.listener?.source != oldListenerSource ||
+                    application.config.vertx?.listener?.afterChanges != oldListenerAfterChanges) {
                 println '*****************************************'
                 println '* GrooScript or Vert.x changes detected *'
                 println '*     - Must restart the server -       *'

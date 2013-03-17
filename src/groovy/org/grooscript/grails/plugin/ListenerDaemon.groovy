@@ -34,7 +34,6 @@ class ListenerDaemon {
                         doAfter(list)
                     }
                 }
-
             }
             println('Listener Started.')
         } else {

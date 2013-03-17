@@ -28,8 +28,14 @@ log4j = {
 
 vertx {
     eventBus {
-        port = 8087
+        port = 8085
         //host = 'localhost'
+    }
+    listener {
+        source = []
+        afterChanges = { list ->
+
+        }
     }
 }
 
@@ -37,6 +43,7 @@ grooscript {
     source = ['scripts/Message.groovy']
     destination = 'web-app/js'
 }
+
 
 modules = {
     sockjs {

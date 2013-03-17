@@ -16,8 +16,7 @@ class GrooScriptVertxTagLib {
 
                     eb.onopen = function() {
 
-                        console.log('Started.');
-
+                        //console.log('Started.');
                         eb.registerHandler('reloadPage', function(message) {
 
                             if (message.reload == true) {
@@ -25,7 +24,6 @@ class GrooScriptVertxTagLib {
                             }
 
                             //console.log('Got message on reloadPage: ' + JSON.stringify(message));
-
                         });
                     }
             '''

@@ -1,8 +1,12 @@
 package org.grooscript.grails.plugin
 
+import groovyx.gpars.dataflow.DataflowVariable
 import org.vertx.groovy.core.Vertx
 import org.vertx.groovy.core.eventbus.EventBus
 import org.vertx.groovy.core.http.HttpServer
+import org.vertx.groovy.core.sockjs.SockJSServer
+
+import static groovyx.gpars.dataflow.Dataflow.task
 
 /**
  * User: jorgefrancoleza
@@ -16,6 +20,7 @@ class VertxEventBus {
     Vertx vertx
     def EventBus eventBus
     HttpServer httpServer
+    SockJSServer sockServer
     def host
     def port
 
@@ -29,7 +34,7 @@ class VertxEventBus {
         def outboundPermitted = []
         outboundPermitted << ["address": CHANNEL_RELOAD]
 
-        vertx.createSockJSServer(httpServer).bridge(config, inboundPermitted, outboundPermitted)
+        sockServer = vertx.createSockJSServer(httpServer).bridge(config, inboundPermitted, outboundPermitted)
 
         httpServer.listen(port)
 
@@ -80,6 +85,31 @@ class VertxEventBus {
     }
 
     def close() {
-        httpServer.close()
+        if (actualListener) {
+            actualListener.stop()
+        }
+        final DataflowVariable closed = new DataflowVariable()
+        httpServer.close({
+            task {
+                closed << true
+            }
+        })
+        closed.val == true
+    }
+
+    ListenerDaemon actualListener
+
+    def stopListener() {
+        if (actualListener) {
+            actualListener.stop()
+        }
+    }
+
+    def startListener(ListenerDaemon listener) {
+        if (actualListener) {
+            stopListener()
+        }
+        actualListener = listener
+        actualListener.start()
     }
 }

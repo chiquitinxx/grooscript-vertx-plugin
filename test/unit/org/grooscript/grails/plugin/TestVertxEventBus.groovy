@@ -11,15 +11,22 @@ class TestVertxEventBus extends GroovyTestCase {
     static final CHANNEL = 'channel'
     static final MESSAGE = [data:'data']
 
-    def getEventBus() {
-        return new VertxEventBus(PORT,HOST)
+    def VertxEventBus eventBus
+
+    void tearDown() {
+        if (eventBus) {
+            eventBus.close()
+        }
+    }
+
+    def getEventBus(num = 0) {
+        return new VertxEventBus(PORT+num,HOST)
     }
 
     void testInitialization () {
 
-        def eventBus
         try {
-            eventBus = new VertxEventBus(PORT,HOST)
+            eventBus = getEventBus()
         } catch (e) {
             fail 'Exception '+e.message
         }
@@ -29,12 +36,12 @@ class TestVertxEventBus extends GroovyTestCase {
     }
 
     void testSendMessage() {
-        VertxEventBus eventBus = getEventBus()
+        eventBus = getEventBus(1)
         assert eventBus.send(CHANNEL,MESSAGE)
     }
 
     void testAddHandler() {
-        VertxEventBus eventBus = getEventBus()
+        eventBus = getEventBus(2)
         def times = 0
         eventBus.addChannelHandler(CHANNEL,{ msg -> times++})//; msg.reply ([ok:true]) })
         /*assert eventBus.send(CHANNEL,MESSAGE, {

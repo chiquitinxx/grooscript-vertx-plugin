@@ -3,7 +3,7 @@ grooscript-vertx-plugin
 
 Grails plugin to help develop with GrooScript and automatically reloads the page with vert.x. You can activate only the GrooScript conversion, only the vert.x server, or both.
 
-**Still plugin in development. I have added plugin to a project and it works. I don't have many Grails experience, any suggestion or comment are welcome. If you change any config option, you must restart the server.**
+**Use this plugin only in development. I have added plugin to a project and it works. I don't have many Grails experience, any suggestion or comment are welcome. If you change any config option, you must restart the server.**
 
 If you need more information about GrooScript visit [grooscript.org](http://grooscript.org), the pluging internals just launch the grooscript conversion daemon, that detects modification in your .groovy files, and convert to javascript.
 
@@ -11,9 +11,11 @@ If you need more information about GrooScript visit [grooscript.org](http://groo
 
 If vert.x and grooscript are up, converted files reload page too.
 
+It uses resources plugin also, and some gpars dataflows.
+
 How do I setup all this things?
 
-1.- Install the plugin. The zip is here, while I finish the development and upload to grails plugins repository.
+1.- Install the plugin. The zip is here, I hope soon in grails plugins repository.
 
 2.- Add dependencies in BuildConfig.groovy
 
@@ -24,8 +26,9 @@ How do I setup all this things?
 
 3.- Set Groovy files to watch to be converted with the GrooScript daemon. (optional)
 
+    //Each second detects changes in source groovy files and generate js files.
     grooscript {
-        //An array of files and folders
+        //An array of files and/or folders
         source = ['src/groovy/Me.groovy']
         //A folder where .js files will be saved
         destination = 'web-app/js'
@@ -52,18 +55,26 @@ And then use in your gsp:
 
     vertx {
         eventBus {
+            //port to run vert.x
             port = 8085
             //Host is optional, by default is localhost
             //host = 'localhost'
         }
+        //Set directories / files to watch and send reload signal to browsers.
+        //Listener runs each second
+        listener {
+            //List of files or folders to watch
+            source = ['web-app/css']
+            //You can execute a closure (must be called afterChanges) that recieve the list of files changed(absolute path text)
+            afterChanges = { list ->
+                list.each { fileName ->
+                    println '** file changed '+fileName
+                }
+            }
+        }
     }
 
-6.- Set directories / files to watch and send reload signal to browsers in Config.groovy. (need vertx running)
-
-    //A list of files and/or folders
-    savedFiles.listener = ['web-app/css']
-
-7.- Finally, in the GSP pages, if you want that page automatillay reloads, need listen to reload event from vert.x, so must add this tag:
+6.- Finally, in the GSP pages, if you want that page automatically reloads, need listen to reload event from vert.x, so must add this tag:
 
 	<grooscript:reloadPage/>
 
@@ -86,18 +97,25 @@ For example, I have used this .gsp for my tests:
 
 And in the Config.groovy file:
 
-	vertx {
-    	eventBus {
-        	port = 8085
-    	}
-	}
+    vertx {
+        eventBus {
+            port = 8085
+            //host = 'localhost'
+        }
+        listener {
+            source = ['web-app/css']
+            afterChanges = { list ->
+                list.each {
+                    println 'CHANGED!!! '+it
+                }
+            }
+        }
+    }
 
 	grooscript {
     	source = ['scripts/Me.groovy']
     	destination = 'web-app/js'
 	}
-
-	savedFiles.listener = ['web-app/css']
 
 	grails.resources.modules = {
     	style {
