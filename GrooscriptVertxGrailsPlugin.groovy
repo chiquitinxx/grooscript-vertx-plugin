@@ -19,8 +19,7 @@ class GrooscriptVertxGrailsPlugin {
         "web-app/js/Message.js"
     ]
 
-    // TODO Fill in these fields
-    def title = "Grooscript Vertx Plugin" // Headline display name of the plugin
+    def title = "Grooscript Vertx Plugin"
     def author = "Jorge Franco Leza"
     def authorEmail = "grooscript@gmail.com"
     def description = '''\
@@ -34,41 +33,31 @@ More info about this plugin http://github.com/chiquitinxx/grooscript-vertx-plugi
     // URL to the plugin's documentation
     def documentation = "http://grails.org/plugin/grooscript-vertx"
 
-    // Extra (optional) plugin metadata
+    def license = "APACHE"
 
-    // License: one of 'APACHE', 'GPL2', 'GPL3'
-//    def license = "APACHE"
+    def organization = [ name: "Grails Community", url: "http://grails.org/" ]
 
-    // Details of company behind the plugin (if there is one)
-//    def organization = [ name: "My Company", url: "http://www.my-company.com/" ]
+    def developers = [ [ name: "Jorge Franco", email: "jorge.franco.leza@gmail.com" ]]
 
-    // Any additional developers beyond the author specified above.
-//    def developers = [ [ name: "Joe Bloggs", email: "joe@bloggs.net" ]]
-
-    // Location of the plugin's issue tracker.
-//    def issueManagement = [ system: "JIRA", url: "http://jira.grails.org/browse/GPMYPLUGIN" ]
+    def issueManagement = [ system: "GITHUB", url: "https://github.com/chiquitinxx/grooscript-vertx-plugin/issues" ]
 
     // Online location of the plugin's browseable source code.
     def scm = [ url: "http://github.com/chiquitinxx/grooscript-vertx-plugin/" ]
 
     def doWithWebDescriptor = { xml ->
-        // TODO Implement additions to web.xml (optional), this event occurs before
     }
 
     def doWithSpring = {
 
         //println '****************** doWithSpring'
 
-        //println 'vertx ->'+application.config.vertx
         def port = application.config.vertx.eventBus.port
-        //def host = application.config.vertx.eventBus.bridge.host
 
         if (port) {
             def host = application.config.vertx.eventBus.host
             if (!host) {
                 host = 'localhost'
             }
-            //println "\nVert.x Initialization Host:${host} Port:${port}"
 
             eventBus(VertxEventBus, port, host) { bean ->
 
@@ -129,7 +118,6 @@ More info about this plugin http://github.com/chiquitinxx/grooscript-vertx-plugi
     }
 
     def doWithDynamicMethods = { ctx ->
-        // TODO Implement registering dynamic methods to classes (optional)
     }
 
     def oldPort
@@ -140,7 +128,7 @@ More info about this plugin http://github.com/chiquitinxx/grooscript-vertx-plugi
     def oldListenerAfterChanges
 
     def doWithApplicationContext = { applicationContext ->
-        //println '****************** doWithApplicationContext'
+
         oldSource = application.config.grooscript?.source
         oldDestination = application.config.grooscript?.destination
         oldPort = application.config.vertx?.eventBus?.port
@@ -152,12 +140,9 @@ More info about this plugin http://github.com/chiquitinxx/grooscript-vertx-plugi
     }
 
     def onChange = { event ->
-        // watching is modified and reloaded. The event contains: event.source,
-        // event.application, event.manager, event.ctx, and event.plugin.
     }
 
     def onConfigChange = { event ->
-        // The event is the same as for 'onChange'.
 
         if (event.plugin.title == "Grooscript Vertx Plugin") {
             //println '****************** onConfigChange'
@@ -176,12 +161,13 @@ More info about this plugin http://github.com/chiquitinxx/grooscript-vertx-plugi
     }
 
     def onShutdown = { event ->
-        // TODO Implement code that is executed when the application shuts down (optional)
-        //println '****************** onShutdown'
-        if (application.applicationContext.eventBus) {
-            println 'Closing Vert.x ...'
-            application.applicationContext.eventBus.close()
-        }
+
         GrooScript.stopConversionDaemon()
+
+        if (applicationContext.eventBus) {
+            println 'Closing Vert.x ...'
+            applicationContext.eventBus.close()
+        }
+
     }
 }
