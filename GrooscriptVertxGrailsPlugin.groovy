@@ -113,7 +113,7 @@ More info about this plugin http://github.com/chiquitinxx/grooscript-vertx-plugi
         if (source && destination) {
             GrooScript.startConversionDaemon(source,destination,options,doAfter)
         } else {
-            println '\n[GrooScript-Vertx] GrooScript daemon not started.'
+            println "\n${VertxEventBus.CONSOLE_MESSAGE} GrooScript daemon not started."
         }
     }
 
@@ -144,7 +144,7 @@ More info about this plugin http://github.com/chiquitinxx/grooscript-vertx-plugi
 
     def onConfigChange = { event ->
 
-        if (event.plugin.title == "Grooscript Vertx Plugin") {
+        if (event.plugin.title == title) {
             //println '****************** onConfigChange'
             if (application.config.grooscript?.source != oldSource ||
                     application.config.grooscript?.destination != oldDestination ||
@@ -155,7 +155,7 @@ More info about this plugin http://github.com/chiquitinxx/grooscript-vertx-plugi
                 println '*****************************************'
                 println '* GrooScript or Vert.x changes detected *'
                 println '*     - Must restart the server -       *'
-                println '*****************************************'
+                println '*****************************************\n'
             }
         }
     }
@@ -165,7 +165,7 @@ More info about this plugin http://github.com/chiquitinxx/grooscript-vertx-plugi
         GrooScript.stopConversionDaemon()
 
         if (applicationContext.eventBus) {
-            println 'Closing Vert.x ...'
+            println "\n${VertxEventBus.CONSOLE_MESSAGE} Closing Vert.x ..."
             applicationContext.eventBus.close()
         }
 

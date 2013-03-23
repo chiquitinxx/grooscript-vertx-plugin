@@ -16,20 +16,34 @@ class VertxEventBus {
 
     static final String CHANNEL_CHANGES = 'changeFiles'
     static final String CHANNEL_RELOAD = 'reloadPage'
+    static final String CONSOLE_MESSAGE = '[GrooScript-Vertx]'
+    static final String EVENTBUS_NAME = 'eventbus'
 
-    Vertx vertx
+    static Vertx vertx
     def EventBus eventBus
     HttpServer httpServer
     SockJSServer sockServer
+    def Stack stack
     def host
     def port
 
     VertxEventBus (int port,String host) {
 
-        vertx = Vertx.newVertx(port,host)
+        stack = new Stack()
+
+        if (!vertx) {
+            try {
+                vertx = Vertx.newVertx(port,host)
+            } catch (e) {
+                println '!-'+e.message
+            }
+        } else {
+            println "\n${CONSOLE_MESSAGE} Vertx already started. Reusing it."
+        }
+
         httpServer = vertx.createHttpServer()
 
-        def config = ["prefix": "/eventbus"]
+        def config = ["prefix": '/' + EVENTBUS_NAME ]
         def inboundPermitted = []
         def outboundPermitted = []
         outboundPermitted << ["address": CHANNEL_RELOAD]
@@ -41,12 +55,12 @@ class VertxEventBus {
         eventBus = vertx.eventBus
         this.host = host
         this.port = port
-        println "\n[GrooScript-Vertx] Vertx event bus bridge listening ${getUrlEventBus()}"
+        println "\n${CONSOLE_MESSAGE} Vertx event bus bridge listening ${getUrlEventBus()}"
         listenFileChanges()
     }
 
     def getUrlEventBus() {
-        return "http://${host}:${port}/eventbus"
+        return "http://${host}:${port}/${EVENTBUS_NAME}"
     }
 
 
@@ -61,7 +75,7 @@ class VertxEventBus {
         try {
             eventBus.send(channel,message)
         } catch (e) {
-            println 'Fail Send!'
+            //println 'Fail Send!'
             result = false
         }
 
@@ -73,7 +87,7 @@ class VertxEventBus {
         try {
             eventBus.send(channel,message,onResponse)
         } catch (e) {
-            println 'Fail Send with response!'
+            //println 'Fail Send with response!'
             result = false
         }
 
@@ -82,12 +96,13 @@ class VertxEventBus {
 
     def addChannelHandler(String channel,Closure handler) {
         eventBus.registerHandler(channel,handler)
+        stack << channel
     }
 
     def close() {
-        if (actualListener) {
-            actualListener.stop()
-        }
+
+        stopListener()
+
         final DataflowVariable closed = new DataflowVariable()
         httpServer.close({
             task {
@@ -95,6 +110,11 @@ class VertxEventBus {
             }
         })
         closed.val == true
+
+        while (!stack.empty()) {
+            eventBus.unregisterSimpleHandler stack.pop()
+        }
+
     }
 
     ListenerDaemon actualListener

@@ -35,9 +35,9 @@ class ListenerDaemon {
                     }
                 }
             }
-            println('Listener Started.')
+            println "${VertxEventBus.CONSOLE_MESSAGE} Listener Started."
         } else {
-            println('Listener need sourceList to run.')
+            println "${VertxEventBus.CONSOLE_MESSAGE} Listener need sourceList to run."
         }
     }
 
@@ -45,7 +45,7 @@ class ListenerDaemon {
         if (actualTask) {
             continueTask = false
             actualTask.join()
-            println('Listener Terminated.')
+            println "${VertxEventBus.CONSOLE_MESSAGE} Listener Terminated."
         }
 
     }
@@ -90,7 +90,7 @@ class ListenerDaemon {
                         checkFile(file)
                     }
                 } else {
-                    def message = 'Listener error in file/folder '+name
+                    def message = "${VertxEventBus.CONSOLE_MESSAGE} Listener error in file/folder ${name}"
                     println message
                     throw new Exception(message)
                 }
