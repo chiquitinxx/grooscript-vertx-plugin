@@ -4,6 +4,7 @@ grooscript-vertx-plugin
 Grails plugin to help develop with GrooScript and automatically reloads the page with vert.x. You can activate only the GrooScript conversion, only the vert.x server, or both.
 
 **Use this plugin only in development. I have added plugin to a project and it works. I don't have many Grails experience, any suggestion or comment are welcome. If you change any config option, you must restart the server.**
+**You need java 1.7 to use this plugin, vert.x requires java 1.7
 
 If you need more information about GrooScript visit [grooscript.org](http://grooscript.org), the pluging internals just launch the grooscript conversion daemon, that detects modification in your .groovy files, and convert to javascript.
 
