@@ -1,12 +1,10 @@
 import org.grooscript.grails.plugin.ListenerDaemon
 import org.grooscript.grails.plugin.VertxEventBus
 import org.grooscript.GrooScript
-import org.springframework.context.ApplicationContext
-import org.vertx.groovy.core.Vertx
 
 class GrooscriptVertxGrailsPlugin {
     // the plugin version
-    def version = "0.2.5"
+    def version = "0.2.6"
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "2.2 > *"
     // resources that are excluded from plugin packaging
@@ -37,7 +35,7 @@ More info about this plugin http://github.com/chiquitinxx/grooscript-vertx-plugi
 
     def organization = [ name: "Grails Community", url: "http://grails.org/" ]
 
-    def developers = [ [ name: "Jorge Franco", email: "jorge.franco.leza@gmail.com" ]]
+    def developers = []
 
     def issueManagement = [ system: "GITHUB", url: "https://github.com/chiquitinxx/grooscript-vertx-plugin/issues" ]
 

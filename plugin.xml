@@ -1,4 +1,4 @@
-<plugin name='grooscript-vertx' version='0.2.5' grailsVersion='2.2 &gt; *'>
+<plugin name='grooscript-vertx' version='0.2.6' grailsVersion='2.2 &gt; *'>
   <author>Jorge Franco Leza</author>
   <authorEmail>grooscript@gmail.com</authorEmail>
   <title>Grooscript Vertx Plugin</title>
@@ -17,11 +17,12 @@ More info about this plugin http://github.com/chiquitinxx/grooscript-vertx-plugi
   <repositories>
     <repository name='grailsCentral' url='http://grails.org/plugins' />
     <repository name='mavenCentral' url='http://repo1.maven.org/maven2/' />
+    <repository name='http://grails.org/plugins' url='http://grails.org/plugins' />
   </repositories>
   <dependencies>
     <compile>
       <dependency group='org.vert-x' name='vertx-lang-groovy' version='1.3.1.final' />
-      <dependency group='org.grooscript' name='grooscript' version='0.2.3' />
+      <dependency group='org.grooscript' name='grooscript' version='0.2.4' />
     </compile>
   </dependencies>
   <plugins />
