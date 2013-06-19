@@ -4,7 +4,7 @@ package org.grooscript.grails.plugin
  * User: jorgefrancoleza
  * Date: 24/02/13
  */
-class TestVertxEventBus extends GroovyTestCase {
+class VertxEventBusSpec extends GroovyTestCase {
 
     static final PORT = 8085
     static final HOST = 'localhost'
@@ -14,9 +14,6 @@ class TestVertxEventBus extends GroovyTestCase {
     def VertxEventBus eventBus
 
     void setUp() {
-        //println 'Init!'
-        //eventBus = getEventBus()
-        //eventBus.close()
     }
 
     void tearDown() {
@@ -49,10 +46,8 @@ class TestVertxEventBus extends GroovyTestCase {
     void testAddHandler() {
         eventBus = getEventBus()
         def times = 0
-        eventBus.addChannelHandler(CHANNEL,{ msg -> times++})//; msg.reply ([ok:true]) })
-        /*assert eventBus.send(CHANNEL,MESSAGE, {
-            assert times == 1
-        })*/
+        eventBus.addChannelHandler(CHANNEL,{ msg -> times++})
+
         assert eventBus.send(CHANNEL,MESSAGE)
         sleep(200)
         assert times == 1
