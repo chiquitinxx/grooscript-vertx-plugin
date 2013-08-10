@@ -1,10 +1,13 @@
 package org.grooscript.grails.plugin
 
+import groovy.util.logging.Log
+import spock.lang.Specification
+
 /**
  * User: jorgefrancoleza
  * Date: 24/02/13
  */
-class VertxEventBusSpec extends GroovyTestCase {
+class VertxEventBusSpec extends Specification {
 
     static final PORT = 8085
     static final HOST = 'localhost'
@@ -13,43 +16,45 @@ class VertxEventBusSpec extends GroovyTestCase {
 
     def VertxEventBus eventBus
 
-    void setUp() {
+    void setup() {
+        eventBus = getEventBus()
     }
 
-    void tearDown() {
+    void cleanup() {
         if (eventBus) {
             eventBus.close()
         }
     }
 
-    def getEventBus(num = 0) {
-        return new VertxEventBus(PORT+num,HOST)
+    def getEventBus() {
+        def vertx = new VertxEventBus(PORT,HOST)
+        vertx
     }
 
-    void testInitialization () {
-
-        try {
-            eventBus = getEventBus()
-        } catch (e) {
-            fail 'Exception '+e.message
-        }
-
-        assert eventBus
-        assert eventBus.getUrlEventBus() == "http://${HOST}:${PORT}/eventbus"
+    void 'test initialization'() {
+        expect:
+        eventBus.getUrlEventBus() == "http://${HOST}:${PORT}/eventbus"
     }
 
-    void testSendMessage() {
-        eventBus = getEventBus()
-        assert eventBus.send(CHANNEL,MESSAGE)
+    void 'test send message'() {
+        expect:
+        eventBus.sendMessage(CHANNEL,MESSAGE)
     }
 
-    void testAddHandler() {
-        eventBus = getEventBus()
+    void 'test listen event'() {
+        given:
         def times = 0
-        eventBus.addChannelHandler(CHANNEL,{ msg -> times++})
+        eventBus.onEvent(CHANNEL,{ msg -> println "Recieved: ${msg.body}";times++})
+        eventBus.onEvent(CHANNEL,{ msg -> times++})
 
-        assert eventBus.send(CHANNEL,MESSAGE)
+        expect:
+        times == 0
+        eventBus.sendMessage(CHANNEL,MESSAGE)
+
+        when:
         sleep(200)
-        assert times == 1
+
+        then:
+        times == 2
     }
 }

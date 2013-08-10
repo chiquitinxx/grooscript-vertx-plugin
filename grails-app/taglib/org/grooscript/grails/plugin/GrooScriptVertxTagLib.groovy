@@ -1,5 +1,7 @@
 package org.grooscript.grails.plugin
 
+import org.grooscript.GrooScript
+
 class GrooScriptVertxTagLib {
 
     def static final VERTX_EVENTBUS_BEAN = 'eventBus'
@@ -42,6 +44,18 @@ class GrooScriptVertxTagLib {
         if (applicationContext.containsBean(VERTX_EVENTBUS_BEAN)) {
             out << r.require(module: 'vertx')
             putJsCode(out)
+        }
+    }
+
+    def code = { attrs, body ->
+        def script = body()
+        try {
+            def result = GrooScript.convert(script)
+            r.script() {
+                out << result
+            }
+        } catch (e) {
+            log.error "GrooScriptVertxTagLib.code: ${e.message}", e
         }
     }
 

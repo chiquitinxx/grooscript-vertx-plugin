@@ -12,33 +12,30 @@ import static groovyx.gpars.dataflow.Dataflow.task
  * User: jorgefrancoleza
  * Date: 24/02/13
  */
-class VertxEventBus {
+class VertxEventBus implements EventHandler {
 
     static final String CHANNEL_CHANGES = 'changeFiles'
     static final String CHANNEL_RELOAD = 'reloadPage'
-    static final String CONSOLE_MESSAGE = '[GrooScript-Vertx]'
     static final String EVENTBUS_NAME = 'eventbus'
 
     static Vertx vertx
-    def EventBus eventBus
+    EventBus eventBus
     HttpServer httpServer
     SockJSServer sockServer
-    def Stack stack
+    Map listeners = [:]
     def host
     def port
 
     VertxEventBus (int port,String host) {
 
-        stack = new Stack()
-
         if (!vertx) {
             try {
                 vertx = Vertx.newVertx(port,host)
             } catch (e) {
-                println '!-'+e.message
+                println "VertxEventBus error creating Vertx: ${e.message}"
             }
         } else {
-            println "\n${CONSOLE_MESSAGE} Vertx already started. Reusing it."
+            println 'Vertx already started. Reusing it.'
         }
 
         httpServer = vertx.createHttpServer()
@@ -46,7 +43,7 @@ class VertxEventBus {
         def config = ["prefix": '/' + EVENTBUS_NAME ]
         def inboundPermitted = []
         def outboundPermitted = []
-        outboundPermitted << ["address": CHANNEL_RELOAD]
+        //outboundPermitted << ["address": CHANNEL_RELOAD]
 
         sockServer = vertx.createSockJSServer(httpServer).bridge(config, inboundPermitted, outboundPermitted)
 
@@ -55,54 +52,53 @@ class VertxEventBus {
         eventBus = vertx.eventBus
         this.host = host
         this.port = port
-        println "\n${CONSOLE_MESSAGE} Vertx event bus bridge listening ${getUrlEventBus()}"
-        listenFileChanges()
+        println "Vertx event bus bridge listening ${getUrlEventBus()}"
+        //listenFileChanges()
     }
 
     def getUrlEventBus() {
         return "http://${host}:${port}/${EVENTBUS_NAME}"
     }
 
-
+    /*
     def listenFileChanges() {
         addChannelHandler(CHANNEL_CHANGES,{ msg ->
             eventBus.publish(CHANNEL_RELOAD,[reload:true])
         })
-    }
-
-    def send(String channel,message) {
-        boolean result = true
-        try {
-            eventBus.send(channel,message)
-        } catch (e) {
-            //println 'Fail Send!'
-            result = false
+    }*/
+    def reactChannel(String name, data) {
+        if (listeners[name]) {
+            listeners[name].each {
+                it(data)
+            }
         }
-
-        return result
     }
 
-    def send(String channel,message,Closure onResponse) {
-        boolean result = true
-        try {
-            eventBus.send(channel,message,onResponse)
-        } catch (e) {
-            //println 'Fail Send with response!'
-            result = false
+    void onEvent(String channel, Closure action) {
+        if (listeners[channel]) {
+            listeners[channel] << action
+        } else {
+            eventBus.registerHandler(channel, this.&reactChannel.curry(channel))
+            listeners[channel] = [action]
         }
-
-        return result
     }
 
+    void sendMessage(String channel,Map data) {
+        try {
+            eventBus.publish(channel, data)
+        } catch (e) {
+            println "VertxEventBus.sendMessage channel:${channel} data:${data} error:${e.message}"
+        }
+    }
+
+    /*
     def addChannelHandler(String channel,Closure handler) {
         eventBus.registerHandler(channel,handler)
-        stack << channel
     }
+    */
 
-    def close() {
-
-        stopListener()
-
+    void close() {
+        println 'Closing Vertx EventBus...'
         final DataflowVariable closed = new DataflowVariable()
         httpServer.close({
             task {
@@ -110,26 +106,6 @@ class VertxEventBus {
             }
         })
         closed.val == true
-
-        while (!stack.empty()) {
-            eventBus.unregisterSimpleHandler stack.pop()
-        }
-
-    }
-
-    ListenerDaemon actualListener
-
-    def stopListener() {
-        if (actualListener) {
-            actualListener.stop()
-        }
-    }
-
-    def startListener(ListenerDaemon listener) {
-        if (actualListener) {
-            stopListener()
-        }
-        actualListener = listener
-        actualListener.start()
+        println 'Closed Vertx EventBus.'
     }
 }

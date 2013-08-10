@@ -8,7 +8,8 @@ import static groovyx.gpars.dataflow.Dataflow.task
  * User: jorgefrancoleza
  * Date: 27/02/13
  */
-class ListenerDaemon {
+class ListenerFileChangesDaemon
+{
 
     def static final REST_TIME = 500
 
@@ -35,9 +36,9 @@ class ListenerDaemon {
                     }
                 }
             }
-            println "${VertxEventBus.CONSOLE_MESSAGE} Listener Started."
+            println 'Listener File Changes Started.'
         } else {
-            println "${VertxEventBus.CONSOLE_MESSAGE} Listener need sourceList to run."
+            println 'Listener File Changes needs sourceList to run.'
         }
     }
 
@@ -45,9 +46,9 @@ class ListenerDaemon {
         if (actualTask) {
             continueTask = false
             actualTask.join()
-            println "${VertxEventBus.CONSOLE_MESSAGE} Listener Terminated."
-        }
 
+        }
+        println 'Listener File Changes Terminated.'
     }
 
     def work() {
@@ -90,7 +91,7 @@ class ListenerDaemon {
                         checkFile(file)
                     }
                 } else {
-                    def message = "${VertxEventBus.CONSOLE_MESSAGE} Listener error in file/folder ${name}"
+                    def message = "Listener File Changes error in file/folder ${name}"
                     println message
                     throw new Exception(message)
                 }

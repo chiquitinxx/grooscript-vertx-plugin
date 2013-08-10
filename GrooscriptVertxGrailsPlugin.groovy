@@ -1,10 +1,9 @@
-import org.grooscript.grails.plugin.ListenerDaemon
 import org.grooscript.grails.plugin.VertxEventBus
 import org.grooscript.GrooScript
 
 class GrooscriptVertxGrailsPlugin {
     // the plugin version
-    def version = "0.2.6"
+    def version = "0.3-SNAPSHOT"
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "2.2 > *"
     // resources that are excluded from plugin packaging
@@ -47,21 +46,17 @@ More info about this plugin http://github.com/chiquitinxx/grooscript-vertx-plugi
 
     def doWithSpring = {
 
-        //println '****************** doWithSpring'
-
-        def port = application.config.vertx.eventBus.port
+        def port = application.config.vertx?.eventBus?.port
 
         if (port) {
-            def host = application.config.vertx.eventBus.host
+            def host = application.config.vertx?.eventBus?.host
             if (!host) {
                 host = 'localhost'
             }
 
             eventBus(VertxEventBus, port, host) { bean ->
-
             }
         }
-
     }
 
     def initGrooscriptDaemon(application,applicationContext) {
@@ -75,8 +70,6 @@ More info about this plugin http://github.com/chiquitinxx/grooscript-vertx-plugi
         if (applicationContext.eventBus) {
 
             //Only 1 listener can be up
-            applicationContext.eventBus.stopListener()
-
             def afterChanges = application.config.vertx?.listener?.afterChanges
             def listenerSource = application.config.vertx?.listener?.source
 
@@ -118,44 +111,16 @@ More info about this plugin http://github.com/chiquitinxx/grooscript-vertx-plugi
     def doWithDynamicMethods = { ctx ->
     }
 
-    def oldPort
-    def oldHost
-    def oldSource
-    def oldDestination
-    def oldListenerSource
-    def oldListenerAfterChanges
-
     def doWithApplicationContext = { applicationContext ->
-
-        oldSource = application.config.grooscript?.source
-        oldDestination = application.config.grooscript?.destination
-        oldPort = application.config.vertx?.eventBus?.port
-        oldHost = application.config.vertx?.eventBus?.host
-        oldListenerSource = application.config.vertx?.listener?.source
-        oldListenerAfterChanges = application.config.vertx?.listener?.afterChanges
         initGrooscriptDaemon(application,applicationContext)
-
     }
 
     def onChange = { event ->
     }
 
     def onConfigChange = { event ->
-
-        if (event.plugin.title == title) {
-            //println '****************** onConfigChange'
-            if (application.config.grooscript?.source != oldSource ||
-                    application.config.grooscript?.destination != oldDestination ||
-                    application.config.vertx?.eventBus?.port != oldPort ||
-                    application.config.vertx?.eventBus?.host != oldHost ||
-                    application.config.vertx?.listener?.source != oldListenerSource ||
-                    application.config.vertx?.listener?.afterChanges != oldListenerAfterChanges) {
-                println '*****************************************'
-                println '* GrooScript or Vert.x changes detected *'
-                println '*     - Must restart the server -       *'
-                println '*****************************************\n'
-            }
-        }
+        GrooScript.stopConversionDaemon()
+        initGrooscriptDaemon(application,)
     }
 
     def onShutdown = { event ->
@@ -163,7 +128,7 @@ More info about this plugin http://github.com/chiquitinxx/grooscript-vertx-plugi
         GrooScript.stopConversionDaemon()
 
         if (applicationContext.eventBus) {
-            println "\n${VertxEventBus.CONSOLE_MESSAGE} Closing Vert.x ..."
+            log.info 'Closing Vert.x ...'
             applicationContext.eventBus.close()
         }
 

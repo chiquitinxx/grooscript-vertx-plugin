@@ -1,9 +1,9 @@
-grooscript-vertx-plugin
-=======================
+grooscript-vertx-plugin 0.3-SNAPSHOT
+====================================
 
 Grails plugin to help develop with GrooScript and automatically reloads the page with vert.x. You can activate only the GrooScript conversion, only the vert.x server, or both.
 
-**Use this plugin only in development. I have added plugin to a project and it works. I don't have many Grails experience, any suggestion or comment are welcome. If you change any config option, you must restart the server.**
+**Use this plugin only in development. If you change any config option, you must restart the server.**
 **You need java 1.7 to use this plugin, vert.x requires java 1.7
 
 If you need more information about GrooScript visit [grooscript.org](http://grooscript.org), the pluging internals just launch the grooscript conversion daemon, that detects modification in your .groovy files, and convert to javascript.
@@ -16,16 +16,11 @@ It uses resources plugin also, and some gpars dataflows.
 
 How do I setup all this things?
 
-1.- Install the plugin. The zip is here, I hope soon in grails plugins repository.
+1.- Install the plugin. In your Build.config
 
-2.- Add dependencies in BuildConfig.groovy
+compile ":grooscript-vertx:0.3"
 
-    dependencies {
-        runtime 'org.vert-x:vertx-lang-groovy:1.3.1.final'
-        runtime 'org.grooscript:grooscript:0.2.3'
-    }
-
-3.- Set Groovy files to watch to be converted with the GrooScript daemon. (optional)
+2.- Set Groovy files to watch to be converted with the GrooScript daemon. (optional)
 
     //Each second detects changes in source groovy files and generate js files.
     grooscript {
@@ -35,7 +30,7 @@ How do I setup all this things?
         destination = 'web-app/js'
     }
 
-4.- If you are using grooscript conversion, that converted .js files, need grooscript.js to work.
+3.- If you are using grooscript conversion, that converted .js files, need grooscript.js to work.
 
 You can do this with resources plugin, in your Config.groovy:
 
@@ -52,7 +47,7 @@ And then use in your gsp:
 
     <r:require module="myModule"/>
 
-5.- If you want to use vert.x for automatically reload pages if changes detected (optional). Set the vert.x port in Config.groovy to launch it
+4.- If you want to use vert.x for automatically reload pages if changes detected (optional). Set the vert.x port in Config.groovy to launch it
 
     vertx {
         eventBus {
@@ -75,7 +70,7 @@ And then use in your gsp:
         }
     }
 
-6.- Finally, in the GSP pages, if you want that page automatically reloads, need listen to reload event from vert.x, so must add this tag:
+5.- Finally, in the GSP pages, if you want that page automatically reloads, need listen to reload event from vert.x, so must add this tag:
 
 	<grooscript:reloadPage/>
 
