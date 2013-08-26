@@ -8,16 +8,14 @@ import static groovyx.gpars.dataflow.Dataflow.task
  * User: jorgefrancoleza
  * Date: 27/02/13
  */
-class ListenerFileChangesDaemon
-{
+class ListenerFileChangesDaemon {
 
     def static final REST_TIME = 500
 
     def sourceList
     def doAfter = null
-
-    def dates = [:]
-    def continueTask = false
+    Map dates = [:]
+    boolean continueTask = false
     def actualTask
 
     /**
@@ -46,33 +44,13 @@ class ListenerFileChangesDaemon
         if (actualTask) {
             continueTask = false
             actualTask.join()
-
         }
         println 'Listener File Changes Terminated.'
     }
 
-    def work() {
+    private work() {
 
-        def Agent agent = new Agent([])
-
-        //Check if lastModified of file changed
-        def checkFile = { File file ->
-            def change
-            //Only add if change, 1st time will be ignored
-            def add = false
-            if (dates."${file.absolutePath}") {
-                change = !(dates."${file.absolutePath}"==file.lastModified())
-                add = true
-            } else {
-                change = true
-            }
-            if (change) {
-                if (add) {
-                    agent << { it.add file.absolutePath }
-                }
-                dates."${file.absolutePath}" = file.lastModified()
-            }
-        }
+        Agent agent = new Agent([])
 
         //Check all files and all files in dirs
         withPool {
@@ -80,15 +58,13 @@ class ListenerFileChangesDaemon
                 def file = new File(name)
                 if (file && (file.isDirectory() || file.isFile())) {
                     if (file.isDirectory()) {
-
                         file.eachFile { File item ->
                             if (item.isFile()) {
-                                checkFile(item)
+                                checkFile item, agent
                             }
                         }
-
                     } else {
-                        checkFile(file)
+                        checkFile file, agent
                     }
                 } else {
                     def message = "Listener File Changes error in file/folder ${name}"
@@ -97,8 +73,26 @@ class ListenerFileChangesDaemon
                 }
             }
         }
+        //Return list of converted files
+        agent.val
+    }
 
-        //List of converted files
-        return agent.val
+    //Check if lastModified of file changed
+    private checkFile = { File file, agent ->
+        def change
+        //Only add if change, 1st time will be ignored
+        def add = false
+        if (dates."${file.absolutePath}") {
+            change = !(dates."${file.absolutePath}"==file.lastModified())
+            add = true
+        } else {
+            change = true
+        }
+        if (change) {
+            if (add) {
+                agent << { it.add file.absolutePath }
+            }
+            dates."${file.absolutePath}" = file.lastModified()
+        }
     }
 }

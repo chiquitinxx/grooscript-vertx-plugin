@@ -1,3 +1,5 @@
+import org.grooscript.grails.plugin.VertxEventBus
+
 // configuration for plugin testing - will not be included in the plugin zip
 
 log4j = {
@@ -32,9 +34,11 @@ vertx {
         //host = 'localhost'
     }
     listener {
-        source = []
+        source = ['web-app/css/style.css']
         afterChanges = { list ->
-
+            if (list) {
+                println 'Detected changes: ' + list
+            }
         }
     }
 }
@@ -44,8 +48,10 @@ grooscript {
     destination = 'web-app/js'
 }
 
-
-modules = {
+grails.resources.modules = {
+    kimbo {
+        resource url:'/js/kimbo.min.js'
+    }
     sockjs {
         resource url:'/js/sockjs.js'
     }
@@ -53,6 +59,12 @@ modules = {
         dependsOn 'sockjs'
         resource url:'/js/vertxbus.js'
     }
+    grooscript {
+        resource url:'/js/grooscript.js'
+    }
 }
 
+phantomjs.path = '/Applications/phantomjs'
 savedFiles.listener = ['web-app/css']
+grails.views.default.codec="none" // none, html, base64
+grails.views.gsp.encoding="UTF-8"

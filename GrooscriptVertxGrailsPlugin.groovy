@@ -1,3 +1,4 @@
+import org.grooscript.grails.plugin.ListenerFileChangesDaemon
 import org.grooscript.grails.plugin.VertxEventBus
 import org.grooscript.GrooScript
 
@@ -76,12 +77,13 @@ More info about this plugin http://github.com/chiquitinxx/grooscript-vertx-plugi
             doAfter = { list ->
                 if (list.size()>0) {
                     applicationContext.grailsResourceProcessor.reloadAll()
-                    applicationContext.eventBus.send(VertxEventBus.CHANNEL_CHANGES,[reload:true])
+                    applicationContext.eventBus.sendMessage(
+                        VertxEventBus.CHANNEL_RELOAD,[reload:true])
                 }
             }
 
             if (listenerSource && listenerSource instanceof List) {
-                ListenerDaemon listener = new ListenerDaemon()
+                ListenerFileChangesDaemon listener = new ListenerFileChangesDaemon()
                 listener.sourceList = listenerSource
                 listener.doAfter = { list ->
                     if (afterChanges) {
@@ -89,9 +91,9 @@ More info about this plugin http://github.com/chiquitinxx/grooscript-vertx-plugi
                     }
                     doAfter(list)
                 }
-
+                listener.start()
                 //Set the listener in eventbus
-                applicationContext.eventBus.startListener(listener)
+                //applicationContext.eventBus.startListener(listener)
             }
         }
 

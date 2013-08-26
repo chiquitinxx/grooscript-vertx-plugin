@@ -15,7 +15,7 @@ grails.project.dependency.resolution = {
 
     dependencies {
         compile 'org.vert-x:vertx-lang-groovy:1.3.1.final'
-        compile 'org.grooscript:grooscript:0.2.4'
+        compile 'org.grooscript:grooscript:0.3'
         test "org.spockframework:spock-grails-support:0.7-groovy-2.0"
         test "cglib:cglib:3.0"
     }

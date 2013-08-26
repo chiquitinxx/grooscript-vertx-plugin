@@ -15,15 +15,17 @@ import spock.lang.Specification
 @TestFor(GrooScriptVertxTagLib)
 class GrooScriptVertxTagLibSpec extends Specification {
 
+    def resourceTaglib
+
     void setup() {
+        resourceTaglib = Mock(ResourceTagLib)
+        GrooScriptVertxTagLib.metaClass.r = resourceTaglib
     }
 
     static final CODE = 'code example'
 
     void 'test code taglib'() {
         given: 'mock taglib and grooscript'
-        def resourceTaglib = Mock(ResourceTagLib)
-        GrooScriptVertxTagLib.metaClass.r = resourceTaglib
         GroovySpy(GrooScript, global: true)
 
         when: 'applying grooscript code taglib'
@@ -32,16 +34,11 @@ class GrooScriptVertxTagLibSpec extends Specification {
         then: 'call convert and script'
         1 * resourceTaglib.script(_)
         1 * GrooScript.convert(CODE)
-        1 * GrooScript.getConverter()
-        0 * _
     }
 
     void 'test reload page'() {
-        given: 'mock taglib'
-        def resourceTaglib = Mock(ResourceTagLib)
-        GrooScriptVertxTagLib.metaClass.r = resourceTaglib
 
-        and: 'add vertx if necesary'
+        given: 'add vertx if necesary'
         if (hasVertx) {
             //BEWARE beans stay for next tests
             defineBeans {

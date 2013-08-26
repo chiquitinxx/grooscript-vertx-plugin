@@ -43,7 +43,7 @@ class VertxEventBus implements EventHandler {
         def config = ["prefix": '/' + EVENTBUS_NAME ]
         def inboundPermitted = []
         def outboundPermitted = []
-        //outboundPermitted << ["address": CHANNEL_RELOAD]
+        outboundPermitted << ["address": CHANNEL_RELOAD]
 
         sockServer = vertx.createSockJSServer(httpServer).bridge(config, inboundPermitted, outboundPermitted)
 

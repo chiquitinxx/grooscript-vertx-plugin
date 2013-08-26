@@ -14,12 +14,12 @@ class GrooScriptVertxTagLib {
 
         out << r.script() {
             out << '''
-                    var eb = new vertx.EventBus(\'''' + eventBus.getUrlEventBus() +'''\');
+                    var eventBus = new vertx.EventBus(\'''' + eventBus.getUrlEventBus() +'''\');
 
-                    eb.onopen = function() {
+                    eventBus.onopen = function() {
 
                         //console.log('Started.');
-                        eb.registerHandler('reloadPage', function(message) {
+                        eventBus.registerHandler('reloadPage', function(message) {
 
                             if (message.reload == true) {
                                 window.location.reload(true);
