@@ -100,6 +100,7 @@ class VertxEventBus implements EventHandler {
     void close() {
         println 'Closing Vertx EventBus...'
         final DataflowVariable closed = new DataflowVariable()
+        listeners = [:]
         httpServer.close({
             task {
                 closed << true

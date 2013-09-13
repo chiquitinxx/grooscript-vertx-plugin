@@ -25,7 +25,7 @@ class GrooScriptVertxTagLibSpec extends Specification {
     static final CODE = 'code example'
 
     void 'test code taglib'() {
-        given: 'mock taglib and grooscript'
+        given: 'mock grooscript'
         GroovySpy(GrooScript, global: true)
 
         when: 'applying grooscript code taglib'
@@ -55,11 +55,32 @@ class GrooScriptVertxTagLibSpec extends Specification {
         0 * _
         expectedResult == result
 
+        and:
+        if (hasVertx) {
+            applicationContext.getBean(GrooScriptVertxTagLib.VERTX_EVENTBUS_BEAN)?.close()
+        }
+
         where:
-        withoutJsLib|hasVertx    |expectedResult
-        true        |false       |''
-        false       |false       |''
-        false       |true        |CODE
-        true        |true        |''
+        withoutJsLib | hasVertx | expectedResult
+        true         | false    | ''
+        false        | false    | ''
+        false        | true     | CODE
+        true         | true     | ''
+    }
+
+    void 'test template'() {
+        given: 'mock grooscript'
+        GroovySpy(GrooScript, global: true)
+
+        when: 'applying grooscript reloadPage taglib'
+        def result = applyTemplate("<grooscript:template>assert true</grooscript:template>")
+
+        then:
+        1 * resourceTaglib.script(_)
+        1 * resourceTaglib.require([module: 'kimbo'])
+        1 * resourceTaglib.require([module: 'grooscript'])
+        //1 * resourceTaglib.require([module: 'grailsGrooScript'])
+        1 * GrooScript.convert("{ -> assert true}")
+        result.startsWith '<div id=\'fTemplate'
     }
 }

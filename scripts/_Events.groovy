@@ -15,8 +15,11 @@ def customTestType = new JUnit4GrailsTestType(testTypeName, testDirectory, testM
 phantomjsTests = [customTestType]
 
 phantomjsTestPhasePreparation = {
-    System.setProperty('JS_LIBRARIES_PATH','web-app/js')
-    System.setProperty('PHANTOMJS_HOME', config.phantomjs.path ) //'/Applications/phantomjs')
+    def phantomJsHome = config.phantomjs?.path
+    if (phantomJsHome) {
+        System.setProperty('JS_LIBRARIES_PATH','web-app/js')
+        System.setProperty('PHANTOMJS_HOME', config.phantomjs.path)
+    }
     functionalTestPhasePreparation()
 }
 

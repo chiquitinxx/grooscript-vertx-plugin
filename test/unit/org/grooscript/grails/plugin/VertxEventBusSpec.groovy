@@ -1,6 +1,5 @@
 package org.grooscript.grails.plugin
 
-import groovy.util.logging.Log
 import spock.lang.Specification
 
 /**
@@ -14,10 +13,10 @@ class VertxEventBusSpec extends Specification {
     static final CHANNEL = 'channel'
     static final MESSAGE = [data:'data']
 
-    def VertxEventBus eventBus
+    VertxEventBus eventBus
 
     void setup() {
-        eventBus = getEventBus()
+        eventBus = obtainNewEventBus()
     }
 
     void cleanup() {
@@ -26,9 +25,8 @@ class VertxEventBusSpec extends Specification {
         }
     }
 
-    def getEventBus() {
-        def vertx = new VertxEventBus(PORT,HOST)
-        vertx
+    def obtainNewEventBus() {
+        new VertxEventBus(PORT, HOST)
     }
 
     void 'test initialization'() {
@@ -38,20 +36,21 @@ class VertxEventBusSpec extends Specification {
 
     void 'test send message'() {
         expect:
-        eventBus.sendMessage(CHANNEL,MESSAGE)
+        eventBus.sendMessage(CHANNEL, MESSAGE)
+        sleep(200)
     }
 
     void 'test listen event'() {
         given:
         def times = 0
-        eventBus.onEvent(CHANNEL,{ msg -> println "Recieved: ${msg.body}";times++})
-        eventBus.onEvent(CHANNEL,{ msg -> times++})
+        eventBus.onEvent(CHANNEL, { msg -> println "Recieved: ${msg.body}"; times++})
+        eventBus.onEvent(CHANNEL, { msg -> times++})
 
         expect:
         times == 0
-        eventBus.sendMessage(CHANNEL,MESSAGE)
 
         when:
+        eventBus.sendMessage(CHANNEL, MESSAGE)
         sleep(200)
 
         then:

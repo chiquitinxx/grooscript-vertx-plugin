@@ -9,7 +9,6 @@ import org.grooscript.asts.PhantomJsTest
 class PhantomJsTests extends GroovyTestCase {
 
     void setUp() {
-
     }
 
     @PhantomJsTest(url='http://localhost:8080/grooscript-vertx/main/test')

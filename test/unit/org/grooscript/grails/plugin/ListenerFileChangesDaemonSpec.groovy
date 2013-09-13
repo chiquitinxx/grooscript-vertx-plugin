@@ -1,5 +1,6 @@
 package org.grooscript.grails.plugin
 
+import spock.lang.Ignore
 import spock.lang.Specification
 
 /**
