@@ -1,6 +1,9 @@
 import org.grooscript.grails.plugin.ListenerFileChangesDaemon
 import org.grooscript.grails.plugin.VertxEventBus
 import org.grooscript.GrooScript
+import grails.util.Environment
+
+import static org.grooscript.grails.util.Util.*
 
 class GrooscriptVertxGrailsPlugin {
     // the plugin version
@@ -11,17 +14,22 @@ class GrooscriptVertxGrailsPlugin {
     def pluginExcludes = [
         "grails-app/views/error.gsp",
         "grails-app/controllers/**",
+        "grails-app/domain/**",
         "grails-app/views/**",
         "scripts/Message.groovy",
         "web-app/css/**",
-        "web-app/js/Message.js"
+        "web-app/images/**",
+        "web-app/js/Message.js",
+        "web-app/js/domainClasses.js",
+        "web-app/js/testWithNode.js",
+        "web-app/js/domain/**"
     ]
 
     def title = "Grooscript Vertx Plugin"
     def author = "Jorge Franco Leza"
     def authorEmail = "grooscript@gmail.com"
     def description = '''\
-Starts Grooscript conversion daemon to convert your groovy files to javascript.
+Use your groovy code in your gsps thanks to grooscript. Use vert.x to use events between server and gsps.
 Automatically reload pages while developing with Vert.x.
 GrooScript info http://grooscript.org
 Vert.x info http://vertx.io
@@ -60,42 +68,19 @@ More info about this plugin http://github.com/chiquitinxx/grooscript-vertx-plugi
         }
     }
 
-    def initGrooscriptDaemon(application,applicationContext) {
+    def initGrooscriptDaemon(application) {
 
         def source = application.config.grooscript?.source
         def destination = application.config.grooscript?.destination
         def options = application.config.grooscript?.options
-        def doAfter = null
 
-        //If there is eventbus, on file changes, we send reload
-        if (applicationContext.eventBus) {
-
-            //Only 1 listener can be up
-            def afterChanges = application.config.vertx?.listener?.afterChanges
-            def listenerSource = application.config.vertx?.listener?.source
-
-            doAfter = { list ->
-                if (list.size()>0) {
-                    applicationContext.grailsResourceProcessor.reloadAll()
-                    applicationContext.eventBus.sendMessage(
-                        VertxEventBus.CHANNEL_RELOAD,[reload:true])
-                }
-            }
-
-            if (listenerSource && listenerSource instanceof List) {
-                ListenerFileChangesDaemon listener = new ListenerFileChangesDaemon()
-                listener.sourceList = listenerSource
-                listener.doAfter = { list ->
-                    if (afterChanges) {
-                        afterChanges(list)
-                    }
-                    doAfter(list)
-                }
-                listener.start()
-                //Set the listener in eventbus
-                //applicationContext.eventBus.startListener(listener)
+        def doAfter = { list ->
+            if (list.size() > 0) {
+                sendReloadNotificationIfNeeded()
             }
         }
+
+        launchFileChangesListeners(application, doAfter)
 
         //By default
         if (!options) {
@@ -104,17 +89,86 @@ More info about this plugin http://github.com/chiquitinxx/grooscript-vertx-plugi
 
         //Start the daemon if source and destination are ok
         if (source && destination) {
-            GrooScript.startConversionDaemon(source,destination,options,doAfter)
+            GrooScript.clearAllOptions()
+            GrooScript.startConversionDaemon(source, destination, options, doAfter)
         } else {
-            println "\n${VertxEventBus.CONSOLE_MESSAGE} GrooScript daemon not started."
+            consoleMessage "GrooScript daemon not started."
         }
     }
 
-    def doWithDynamicMethods = { ctx ->
+    private sendReloadNotificationIfNeeded() {
+        if (applicationContext.eventBus) {
+            applicationContext.grailsResourceProcessor.reloadAll()
+            applicationContext.eventBus.sendMessage(
+                    VertxEventBus.CHANNEL_RELOAD,[reload:true])
+        }
+    }
+
+    private launchFileChangesListeners(application, doAfter) {
+
+        if (Environment.current == Environment.DEVELOPMENT) {
+            launchConfigFileChangesListener(application, doAfter)
+            //launchDomainFileChangesListener(application)
+        }
+    }
+
+    private launchConfigFileChangesListener(application, doAfter) {
+
+        def afterChanges = application.config.vertx?.listener?.afterChanges
+        def listenerSource = application.config.vertx?.listener?.source
+
+        if (listenerSource && listenerSource instanceof List) {
+            ListenerFileChangesDaemon listener = new ListenerFileChangesDaemon()
+            listener.sourceList = listenerSource
+            listener.doAfter = { list ->
+                if (afterChanges) {
+                    afterChanges(list)
+                }
+                doAfter(list)
+            }
+            listener.start()
+        }
+    }
+
+    private launchDomainFileChangesListener(application) {
+
+        if (application.config.grooscript?.model) {
+            def listModelFiles = application.config.grooscript?.model
+
+            if (listModelFiles && listModelFiles instanceof List) {
+                ListenerFileChangesDaemon listener = new ListenerFileChangesDaemon(notifyAllChanges: true)
+                listener.sourceList = listModelFiles.collect { domainItem ->
+                    "${DOMAIN_DIR}${SEP}${domainItem.name.replaceAll(/\./,SEP)}.groovy"
+                }
+                consoleMessage('Source: '+listener.sourceList)
+                listener.doAfter = { list ->
+                    if (list) {
+                        list.each { String absolutePath ->
+                            GrooScript.clearAllOptions()
+                            GrooScript.setConversionProperty('customization', {
+                                ast(org.grooscript.asts.DomainClass)
+                            })
+                            GrooScript.setOwnClassPath([GROOVY_DIR, DOMAIN_DIR])
+                            try {
+                                GrooScript.convert(absolutePath, DOMAIN_JS_DIR)
+                                consoleMessage("Converted domain class: $absolutePath")
+                            } catch (e) {
+                                consoleError("Error converting $absolutePath: ${e.message}")
+                            }
+                        }
+                        GrooScript.joinFiles(DOMAIN_JS_DIR, DOMAIN_CLASSES_JS_FILE)
+                        if (list.size() != listModelFiles.size()) {
+                            sendReloadNotificationIfNeeded()
+                        }
+                    }
+                }
+                listener.start()
+            }
+        }
     }
 
     def doWithApplicationContext = { applicationContext ->
-        initGrooscriptDaemon(application,applicationContext)
+        initGrooscriptDaemon(application)
     }
 
     def onChange = { event ->
@@ -122,7 +176,7 @@ More info about this plugin http://github.com/chiquitinxx/grooscript-vertx-plugi
 
     def onConfigChange = { event ->
         GrooScript.stopConversionDaemon()
-        initGrooscriptDaemon(application,)
+        initGrooscriptDaemon(application)
     }
 
     def onShutdown = { event ->
@@ -130,9 +184,8 @@ More info about this plugin http://github.com/chiquitinxx/grooscript-vertx-plugi
         GrooScript.stopConversionDaemon()
 
         if (applicationContext.eventBus) {
-            log.info 'Closing Vert.x ...'
+            consoleMessage 'Closing Vert.x ...'
             applicationContext.eventBus.close()
         }
-
     }
 }

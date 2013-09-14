@@ -1,6 +1,8 @@
 package org.grooscript.grails.plugin
 
+import groovy.transform.TypeChecked
 import org.grooscript.GrooScript
+import static org.grooscript.grails.util.Util.*
 
 class GrooScriptVertxTagLib {
 
@@ -8,7 +10,7 @@ class GrooScriptVertxTagLib {
 
     static namespace = 'grooscript'
 
-    static final SEP = System.getProperty('file.separator')
+    def grailsApplication
 
     private putJsCode(out) {
 
@@ -64,47 +66,58 @@ class GrooScriptVertxTagLib {
     def template = { attrs, body ->
         def script = body()
         def functionName = 'fTemplate'+new Date().time.toString()
-        def result = GrooScript.convert("{ -> ${script}}")
-        //println 'Result->'+result
-        r.require(module: 'kimbo')
-        r.require(module: 'grooscript')
+        //println 'script->'+script+'<-'
+        String result = GrooScript.convert("Builder.process { -> ${script}}").trim()
+        //println 'Result->'+result+'<-'
 
-        out << "<div id='${functionName}'/>"
+        r.require(module: 'grooscript')
+        r.require(module: 'kimbo')
+        r.require(module: 'grooscriptGrails')
+
+        processTemplateEvents(attrs.reloadOn, functionName)
+
+        out << "\n<div id='${functionName}'></div>\n"
 
         r.script() {
-            out << "function ${functionName}() {"
-            out << "  \$('${functionName}').html(Builder.process(${result}).html);"
-            out << '};'
-            out << '$(document).ready(function() {'
-            out << "  ${functionName}();"
-            out << '});'
+            out << "\nfunction ${functionName}() {\n"
+            out << "  var code = ${result};\n"
+            out << "  \$('#${functionName}').html(code.html);\n"
+            out << '};\n'
+            out << '$(document).ready(function() {\n'
+            out << "  ${functionName}();\n"
+            out << '});\n'
         }
         //println 'Out->'+out.toString()
     }
 
-    def model = { attrs ->
-        if (!attrs.domainClass) {
-            log.error "GrooScriptVertxTagLib.model: have to define domainClass property"
-        } else {
-            def domainClass
-            if (attrs.domainClass instanceof String) {
-                try {
-                    domainClass = Class.forName(attrs.domainClass)
-                } catch (e) {
-                    log.error "GrooScriptVertxTagLib.model: domainClass must exists"
-                    e.printStackTrace()
+    private processTemplateEvents(listEvents, functionName) {
+        if (listEvents) {
+            r.require(module: 'clientEvents')
+            r.script() {
+                listEvents.each { nameEvent ->
+                    out << "\ngrooscriptEvents.onEvent('${nameEvent}', ${functionName})\n"
                 }
-            } else {
-                domainClass = attrs.domainClass
-            }
-            if (domainClass) {
-                prepareDomainClassJsFile(domainClass)
-
             }
         }
     }
 
-    private prepareDomainClassJsFile(Class domainClass) {
+    def model = { attrs ->
+        if (!attrs.domainClass || !(attrs.domainClass instanceof String)) {
+            log.error "GrooScriptVertxTagLib.model: have to define domainClass property as a String"
+        } else {
+            if (existDomainClass(attrs.domainClass)) {
+                r.require(module: 'domainClasses')
+            } else {
+                log.error "Not exist domain class ${attrs.domainClass}"
+            }
+        }
+    }
+
+    private existDomainClass(String nameClass) {
+        grailsApplication.domainClasses.find { it.fullName == nameClass }
+    }
+
+    private prepareDomainClassJsFile(String domainClass) {
         try {
             GrooScript.clearAllOptions()
             GrooScript.setConversionProperty('customization', {
@@ -113,28 +126,24 @@ class GrooScriptVertxTagLib {
             })
             GrooScript.setOwnClassPath(['src/groovy'])
             File domainFile = getDomainFile(domainClass)
-            println 'SOURCE *********************\n'+domainFile.text
+            //println 'SOURCE *********************\n'+domainFile.text
             if (domainFile) {
                 try {
-                    GrooScript.convert(domainFile.path, domainJsDir)
+                    GrooScript.convert(domainFile.path, DOMAIN_JS_DIR)
                 } catch (e) {
-                    println 'GrooScriptVertxTagLib Error converting ' + e.message
+                    consoleError 'GrooScriptVertxTagLib Error converting ' + e.message
                 }
             } else {
-                println 'GrooScriptVertxTagLib Error finding domain class ' + domainClass.name
+                consoleError 'GrooScriptVertxTagLib Error finding domain class ' + domainClass.name
             }
         } catch (e) {
-            println 'GrooScriptVertxTagLib Error creating domain class js file ' + e.message
+            consoleError 'GrooScriptVertxTagLib Error creating domain class js file ' + e.message
         }
     }
 
-    private File getDomainFile(Class domainClass) {
-        def nameFile = "grails-app${SEP}domain${SEP}${domainClass.name.replaceAll(/\./,SEP)}.groovy"
-        println 'DOMAIN CLASS FILE: ' + nameFile
+    private File getDomainFile(String domainClass) {
+        def nameFile = "${DOMAIN_DIR}${SEP}${domainClass.replaceAll(/\./,SEP)}.groovy"
+        //println 'DOMAIN CLASS FILE: ' + nameFile
         new File(nameFile)
-    }
-
-    private String getDomainJsDir() {
-        "web-app${SEP}js${SEP}domain"
     }
 }

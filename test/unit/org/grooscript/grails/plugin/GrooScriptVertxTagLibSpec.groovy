@@ -5,7 +5,11 @@ import grails.test.mixin.TestMixin
 import grails.test.mixin.support.GrailsUnitTestMixin
 import org.grails.plugin.resource.ResourceTagLib
 import org.grooscript.GrooScript
+import org.grooscript.grails.util.Builder
 import spock.lang.Specification
+
+import static org.grooscript.grails.util.Util.getDOMAIN_JS_EXTERNAL
+import static org.grooscript.grails.util.Util.getSEP
 
 /**
  * @author Jorge Franco
@@ -72,15 +76,46 @@ class GrooScriptVertxTagLibSpec extends Specification {
         given: 'mock grooscript'
         GroovySpy(GrooScript, global: true)
 
-        when: 'applying grooscript reloadPage taglib'
+        when:
         def result = applyTemplate("<grooscript:template>assert true</grooscript:template>")
 
         then:
         1 * resourceTaglib.script(_)
         1 * resourceTaglib.require([module: 'kimbo'])
         1 * resourceTaglib.require([module: 'grooscript'])
-        //1 * resourceTaglib.require([module: 'grailsGrooScript'])
-        1 * GrooScript.convert("{ -> assert true}")
-        result.startsWith '<div id=\'fTemplate'
+        1 * resourceTaglib.require([module: 'grooscriptGrails'])
+        1 * GrooScript.convert('Builder.process { -> assert true}')
+        result.startsWith "\n<div id='fTemplate"
+    }
+
+    void 'test template with a reload event'() {
+        when:
+        applyTemplate('<grooscript:template reloadOn="$events">h3 \'Number times:\' + numberTimes</grooscript:template>',
+                [events: ['redraw']])
+
+        then:
+        2 * resourceTaglib.script(_)
+        1 * resourceTaglib.require([module: 'clientEvents'])
+    }
+
+    static final FAKE_NAME = 'FAKE'
+    static final DOMAIN_CLASS_NAME = 'correctDomainClass'
+
+    void 'test model with domain class'() {
+        given:
+        GrooScriptVertxTagLib.metaClass.existDomainClass = { String name ->
+            name != FAKE_NAME
+        }
+
+        when:
+        applyTemplate("<grooscript:model domainClass='${domainClassName}'/>")
+
+        then:
+        numberTimes * resourceTaglib.require([module: 'domainClasses'])
+
+        where:
+        domainClassName   | numberTimes
+        FAKE_NAME         | 0
+        DOMAIN_CLASS_NAME | 1
     }
 }

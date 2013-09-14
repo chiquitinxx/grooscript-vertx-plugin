@@ -62,7 +62,20 @@ grails.resources.modules = {
     grooscript {
         resource url:'/js/grooscript.js'
     }
+    grooscriptGrails {
+        resource url:'/js/Builder.js'
+    }
+    domainClasses {
+        dependsOn 'grooscript'
+        resource url:'/js/domainClasses.js'
+    }
+    clientEvents {
+        dependsOn 'grooscript'
+        resource url:'/js/ClientEventHandler.js'
+    }
 }
+
+grooscript.model = [ [name: 'org.grooscript.domain.DomainItem']]
 
 phantomjs.path = '/Applications/phantomjs'
 savedFiles.listener = ['web-app/css']

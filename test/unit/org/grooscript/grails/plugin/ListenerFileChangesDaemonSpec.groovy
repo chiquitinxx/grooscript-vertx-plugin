@@ -1,6 +1,5 @@
 package org.grooscript.grails.plugin
 
-import spock.lang.Ignore
 import spock.lang.Specification
 
 /**
@@ -13,7 +12,7 @@ class ListenerFileChangesDaemonSpec extends Specification {
     static final FILE_NAME = 'file.txt'
     static final TEXT_BEFORE = 'text before'
     static final TEXT_AFTER = 'text after'
-    static final TIME = 1000
+    static final TIME = ListenerFileChangesDaemon.REST_TIME
     ListenerFileChangesDaemon listener
 
     def setup() {
@@ -28,21 +27,33 @@ class ListenerFileChangesDaemonSpec extends Specification {
     void 'test listener file changes'() {
         given: 'a folder with a file'
         createFiles()
-        def value = 0
+        def nameFile = ''
+        def times = 0
 
         and: 'listener on that folder'
         listener.sourceList = [FOLDER_NAME]
-        listener.doAfter = {
-            value = 5
+        listener.notifyAllChanges = notifyAllChanges
+        listener.doAfter = { list ->
+            if (list) {
+                times ++
+                nameFile = list[0]
+            }
         }
-        listener.start()
 
         when:
+        listener.start()
+        sleep(TIME * 2)
         changeFile()
-        sleep(TIME)
+        sleep(TIME * 2)
 
         then:
-        value == 5
+        nameFile == new File("${FOLDER_NAME}/${FILE_NAME}").absolutePath
+        times == expectedTimes
+
+        where:
+        notifyAllChanges    |expectedTimes
+        false               |1
+        true                |2
     }
 
     private deleteFiles() {

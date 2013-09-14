@@ -17,6 +17,7 @@ class ListenerFileChangesDaemon {
     Map dates = [:]
     boolean continueTask = false
     def actualTask
+    def notifyAllChanges = false
 
     /**
      * Start the daemon
@@ -28,13 +29,13 @@ class ListenerFileChangesDaemon {
             actualTask = task {
                 while (continueTask) {
                     def list = work()
-                    sleep(REST_TIME)
                     if (doAfter && doAfter instanceof Closure) {
                         doAfter(list)
                     }
+                    sleep(REST_TIME)
                 }
             }
-            println 'Listener File Changes Started.'
+            //println 'Listener File Changes Started.'
         } else {
             println 'Listener File Changes needs sourceList to run.'
         }
@@ -45,7 +46,7 @@ class ListenerFileChangesDaemon {
             continueTask = false
             actualTask.join()
         }
-        println 'Listener File Changes Terminated.'
+        //println 'Listener File Changes Terminated.'
     }
 
     private work() {
@@ -78,7 +79,7 @@ class ListenerFileChangesDaemon {
     }
 
     //Check if lastModified of file changed
-    private checkFile = { File file, agent ->
+    private checkFile = { File file, Agent agent ->
         def change
         //Only add if change, 1st time will be ignored
         def add = false
@@ -89,7 +90,7 @@ class ListenerFileChangesDaemon {
             change = true
         }
         if (change) {
-            if (add) {
+            if (add || notifyAllChanges) {
                 agent << { it.add file.absolutePath }
             }
             dates."${file.absolutePath}" = file.lastModified()
