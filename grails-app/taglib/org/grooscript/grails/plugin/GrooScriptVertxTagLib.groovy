@@ -69,12 +69,13 @@ class GrooScriptVertxTagLib {
         //println 'script->'+script+'<-'
         String result = GrooScript.convert("Builder.process { -> ${script}}").trim()
         //println 'Result->'+result+'<-'
+        result = result.replaceAll(/this\./,'')
 
         r.require(module: 'grooscript')
         r.require(module: 'kimbo')
         r.require(module: 'grooscriptGrails')
 
-        processTemplateEvents(attrs.reloadOn, functionName)
+        processTemplateEvents(attrs.listenEvents, functionName)
 
         out << "\n<div id='${functionName}'></div>\n"
 

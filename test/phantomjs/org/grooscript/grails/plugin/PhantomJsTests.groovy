@@ -19,4 +19,15 @@ class PhantomJsTests extends GroovyTestCase {
         assert p.size() == 1, 'Correct size is ' + p.size()
         assert p[0].textContent == 'Test p', "p tag is correct ${p[0].textContent}"
     }
+
+    @PhantomJsTest(url='http://localhost:8080/grooscript-vertx/main/test')
+    void testAddButtonAction() {
+        assert $("p").size() == 1, 'Correct size is ' + $("p").size()
+        assert $("h3").text() == 'Number of times: 0', 'Correct text is >' + $("h3").text() +'<'
+
+        grooscriptEvents.sendMessage('redraw',null);
+
+        assert $("p").size() == 2, 'Correct size is ' + $("p").size()
+        assert $("h3").text() == 'Number of times: 1', 'Correct text is >' + $("h3").text() +'<'
+    }
 }

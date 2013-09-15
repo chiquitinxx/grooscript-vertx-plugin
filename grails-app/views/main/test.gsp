@@ -20,8 +20,14 @@
         }
     </grooscript:template>
 
-    <grooscript:template reloadOn="['redraw']" localVars="['numberTimes']">
-        h3 'Number of times: ' + numberTimes++
+    <button type="button" id="addButton" onclick="grooscriptEvents.sendMessage('redraw',null);">Add</button>
+
+    <grooscript:template listenEvents="['redraw']">
+        def number = numberTimes++
+        h3 'Number of times: ' + number
+        number.times { num ->
+            p ' '+num
+        }
     </grooscript:template>
 
     <grooscript:model domainClass='org.grooscript.domain.DomainItem'/>

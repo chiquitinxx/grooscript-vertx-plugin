@@ -90,7 +90,7 @@ class GrooScriptVertxTagLibSpec extends Specification {
 
     void 'test template with a reload event'() {
         when:
-        applyTemplate('<grooscript:template reloadOn="$events">h3 \'Number times:\' + numberTimes</grooscript:template>',
+        applyTemplate('<grooscript:template listenEvents="$events">h3 \'Hello!\'</grooscript:template>',
                 [events: ['redraw']])
 
         then:
