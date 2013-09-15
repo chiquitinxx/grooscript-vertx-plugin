@@ -7,88 +7,142 @@ import static org.grooscript.grails.util.Util.*
 class GrooScriptVertxTagLib {
 
     static final VERTX_EVENTBUS_BEAN = 'eventBus'
+    static final EVENTBUS_JS_NAME = 'grooscriptEventBus'
+    static final REQUEST_VERTX_STARTED = 'grooscriptVertxStarted'
+    static final REQUEST_VERTX_NEXT_ONLOAD = 'grooscriptVertxNextOnLoad'
+    static final VERTX_ONLOAD_FUNCTION_PREFIX = 'grooscriptVertxOnLoad'
 
     static namespace = 'grooscript'
 
     def grailsApplication
 
-    private putJsCode(out) {
+    def getNextVertxOnLoadEvent() {
+        def value = request.getAttribute(REQUEST_VERTX_NEXT_ONLOAD)
+        request.setAttribute(REQUEST_VERTX_NEXT_ONLOAD, (value ? value + 1 : 1) )
+        value ?: 0
+    }
 
-        def eventBus = applicationContext.getBean(VERTX_EVENTBUS_BEAN)
+    private putReloadPageJsCode() {
+        r.script() {
+            out << "\nfunction ${nextVertxOnLoadFunctionName}() {\n    ${EVENTBUS_JS_NAME}"+
+'''.registerHandler(\''''+VertxEventBus.CHANNEL_RELOAD+'''\', function(message) {
 
-        out << r.script() {
-            out << '''
-                    var eventBus = new vertx.EventBus(\'''' + eventBus.getUrlEventBus() +'''\');
-
-                    eventBus.onopen = function() {
-
-                        //console.log('Started.');
-                        eventBus.registerHandler('reloadPage', function(message) {
-
-                            if (message.reload == true) {
-                                window.location.reload(true);
-                            }
-
-                            //console.log('Got message on reloadPage: ' + JSON.stringify(message));
-                        });
-                    }
-            '''
+        if (message.reload == true) {
+            window.location.reload(true);
+        }
+        console.log('Got message on reloadPage: ' + JSON.stringify(message));
+    });
+};\n'''
         }
     }
 
-    def reloadPageWithoutJsLibs = {
+    private getNextVertxOnLoadFunctionName() {
+        "${VERTX_ONLOAD_FUNCTION_PREFIX}${nextVertxOnLoadEvent}"
+    }
+
+    def getVertxStarted() {
+        def value = request.getAttribute(REQUEST_VERTX_STARTED)
+        value != null
+    }
+
+    def setVertxStarted(value) {
+        request.setAttribute(REQUEST_VERTX_STARTED, value)
+    }
+
+    def initVertx = {
 
         if (applicationContext.containsBean(VERTX_EVENTBUS_BEAN)) {
-            putJsCode(out)
+
+            def eventBus = applicationContext.getBean(VERTX_EVENTBUS_BEAN)
+
+            if (!vertxStarted) {
+                r.require(module: 'vertx')
+                r.script() {
+                    out << "\nvar ${EVENTBUS_JS_NAME} = new vertx.EventBus('${eventBus.getUrlEventBus()}');\n"
+                    out << "grooscriptEventBus.onopen = function() {\n"
+                    out << "    var stop = false, actualNumber = 0;\n"
+                    out << "    while (!stop) {\n"
+                    out << "        try {\n"
+                    out << "            var onLoadFunction = eval('grooscriptVertxOnLoad'+ actualNumber++);\n"
+                    out << "            if (onLoadFunction != undefined && typeof onLoadFunction === \"function\") {\n"
+                    out << "                onLoadFunction();\n"
+                    out << "            } else {\n"
+                    out << "                stop = true;\n"
+                    out << "            }\n"
+                    out << "        } catch (e) { stop = true; }\n"
+                    out << "    }\n"
+                    out << "}\n"
+                }
+            }
+            vertxStarted = true
         }
     }
 
     def reloadPage = {
 
         if (applicationContext.containsBean(VERTX_EVENTBUS_BEAN)) {
-            out << r.require(module: 'vertx')
-            putJsCode(out)
+            initVertx()
+            putReloadPageJsCode()
         }
     }
 
     def code = { attrs, body ->
-        def script = body()
-        try {
-            def result = GrooScript.convert(script)
-            r.script() {
-                out << result
+        def script
+        if (attrs.filePath) {
+            try {
+                script = new File(attrs.filePath).text
+            } catch (e) {
+                log.error "GrooScriptVertxTagLib.code error reading file('${attrs.filePath}'): ${e.message}", e
             }
-        } catch (e) {
-            log.error "GrooScriptVertxTagLib.code: ${e.message}", e
+        } else {
+            script = body()
+        }
+        if (script) {
+            try {
+                def result = GrooScript.convert(script)
+                r.script() {
+                    out << result
+                }
+            } catch (e) {
+                log.error "GrooScriptVertxTagLib.code error converting: ${e.message}", e
+            }
         }
     }
 
     def template = { attrs, body ->
-        def script = body()
-        def functionName = 'fTemplate'+new Date().time.toString()
-        //println 'script->'+script+'<-'
-        String result = GrooScript.convert("Builder.process { -> ${script}}").trim()
-        //println 'Result->'+result+'<-'
-        result = result.replaceAll(/this\./,'')
-
-        r.require(module: 'grooscript')
-        r.require(module: 'kimbo')
-        r.require(module: 'grooscriptGrails')
-
-        processTemplateEvents(attrs.listenEvents, functionName)
-
-        out << "\n<div id='${functionName}'></div>\n"
-
-        r.script() {
-            out << "\nfunction ${functionName}() {\n"
-            out << "  var code = ${result};\n"
-            out << "  \$('#${functionName}').html(code.html);\n"
-            out << '};\n'
-            out << '$(document).ready(function() {\n'
-            out << "  ${functionName}();\n"
-            out << '});\n'
+        def script
+        if (attrs.filePath) {
+            try {
+                script = new File(attrs.filePath).text
+            } catch (e) {
+                log.error "GrooScriptVertxTagLib.template error reading file('${attrs.filePath}'): ${e.message}", e
+            }
+        } else {
+            script = body()
         }
-        //println 'Out->'+out.toString()
+        if (script) {
+            def functionName = 'fTemplate'+new Date().time.toString()
+            String result = GrooScript.convert("Builder.process { -> ${script}}").trim()
+            result = result.replaceAll(/this\./,'')
+
+            r.require(module: 'grooscript')
+            r.require(module: 'kimbo')
+            r.require(module: 'grooscriptGrails')
+
+            processTemplateEvents(attrs.listenEvents, functionName)
+
+            out << "\n<div id='${functionName}'></div>\n"
+
+            r.script() {
+                out << "\nfunction ${functionName}() {\n"
+                out << "  var code = ${result};\n"
+                out << "  \$('#${functionName}').html(code.html);\n"
+                out << '};\n'
+                out << '$(document).ready(function() {\n'
+                out << "  ${functionName}();\n"
+                out << '});\n'
+            }
+        }
     }
 
     private processTemplateEvents(listEvents, functionName) {
@@ -142,8 +196,12 @@ class GrooScriptVertxTagLib {
         }
     }
 
+    private getPathFromClassName(String className) {
+        "${className.replaceAll(/\./,SEP)}.groovy"
+    }
+
     private File getDomainFile(String domainClass) {
-        def nameFile = "${DOMAIN_DIR}${SEP}${domainClass.replaceAll(/\./,SEP)}.groovy"
+        def nameFile = "${DOMAIN_DIR}${SEP}${getPathFromClassName(domainClass)}"
         //println 'DOMAIN CLASS FILE: ' + nameFile
         new File(nameFile)
     }

@@ -7,6 +7,7 @@ import org.vertx.groovy.core.http.HttpServer
 import org.vertx.groovy.core.sockjs.SockJSServer
 
 import static groovyx.gpars.dataflow.Dataflow.task
+import static org.grooscript.grails.util.Util.*
 
 /**
  * User: jorgefrancoleza
@@ -14,7 +15,6 @@ import static groovyx.gpars.dataflow.Dataflow.task
  */
 class VertxEventBus implements EventHandler {
 
-    static final String CHANNEL_CHANGES = 'changeFiles'
     static final String CHANNEL_RELOAD = 'reloadPage'
     static final String EVENTBUS_NAME = 'eventbus'
 
@@ -26,24 +26,27 @@ class VertxEventBus implements EventHandler {
     def host
     def port
 
-    VertxEventBus (int port,String host) {
+    VertxEventBus (int port, String host, inboundPermitted = [], outboundPermitted = [], testing = false) {
 
         if (!vertx) {
             try {
-                vertx = Vertx.newVertx(port,host)
+                vertx = Vertx.newVertx(port, host)
             } catch (e) {
-                println "VertxEventBus error creating Vertx: ${e.message}"
+                consoleError "VertxEventBus error creating Vertx: ${e.message}"
             }
         } else {
-            println 'Vertx already started. Reusing it.'
+            consoleMessage 'Vertx already started. Reusing it.'
         }
 
         httpServer = vertx.createHttpServer()
 
         def config = ["prefix": '/' + EVENTBUS_NAME ]
-        def inboundPermitted = []
-        def outboundPermitted = []
-        outboundPermitted << ["address": CHANNEL_RELOAD]
+
+        addChannelToList(CHANNEL_RELOAD, outboundPermitted)
+        if (testing) {
+            addChannelToList('testing', inboundPermitted)
+            addChannelToList('testingIncoming', outboundPermitted)
+        }
 
         sockServer = vertx.createSockJSServer(httpServer).bridge(config, inboundPermitted, outboundPermitted)
 
@@ -52,20 +55,19 @@ class VertxEventBus implements EventHandler {
         eventBus = vertx.eventBus
         this.host = host
         this.port = port
-        println "Vertx event bus bridge listening ${getUrlEventBus()}"
-        //listenFileChanges()
+        consoleMessage "Vertx event bus bridge listening ${urlEventBus}"
+    }
+
+    private addChannelToList(String channelName, List list) {
+        if (!list.find { it."address" == channelName}) {
+            list << ["address": channelName]
+        }
     }
 
     def getUrlEventBus() {
         return "http://${host}:${port}/${EVENTBUS_NAME}"
     }
 
-    /*
-    def listenFileChanges() {
-        addChannelHandler(CHANNEL_CHANGES,{ msg ->
-            eventBus.publish(CHANNEL_RELOAD,[reload:true])
-        })
-    }*/
     def reactChannel(String name, data) {
         if (listeners[name]) {
             listeners[name].each {
@@ -87,18 +89,12 @@ class VertxEventBus implements EventHandler {
         try {
             eventBus.publish(channel, data)
         } catch (e) {
-            println "VertxEventBus.sendMessage channel:${channel} data:${data} error:${e.message}"
+            consoleError "VertxEventBus.sendMessage channel:${channel} data:${data} error:${e.message}"
         }
     }
 
-    /*
-    def addChannelHandler(String channel,Closure handler) {
-        eventBus.registerHandler(channel,handler)
-    }
-    */
-
     void close() {
-        println 'Closing Vertx EventBus...'
+        consoleMessage 'Closing Vertx EventBus...'
         final DataflowVariable closed = new DataflowVariable()
         listeners = [:]
         httpServer.close({
@@ -107,6 +103,6 @@ class VertxEventBus implements EventHandler {
             }
         })
         closed.val == true
-        println 'Closed Vertx EventBus.'
+        consoleMessage 'Closed Vertx EventBus.'
     }
 }

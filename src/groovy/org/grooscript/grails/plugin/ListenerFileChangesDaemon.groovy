@@ -3,6 +3,7 @@ package org.grooscript.grails.plugin
 import groovyx.gpars.agent.Agent
 import static groovyx.gpars.GParsPool.withPool
 import static groovyx.gpars.dataflow.Dataflow.task
+import static org.grooscript.grails.util.Util.*
 
 /**
  * User: jorgefrancoleza
@@ -35,9 +36,9 @@ class ListenerFileChangesDaemon {
                     sleep(REST_TIME)
                 }
             }
-            //println 'Listener File Changes Started.'
+            consoleMessage 'Listener File Changes Started.'
         } else {
-            println 'Listener File Changes needs sourceList to run.'
+            consoleError 'Listener File Changes needs sourceList to run.'
         }
     }
 
@@ -46,7 +47,7 @@ class ListenerFileChangesDaemon {
             continueTask = false
             actualTask.join()
         }
-        //println 'Listener File Changes Terminated.'
+        consoleMessage 'Listener File Changes Terminated.'
     }
 
     private work() {
@@ -69,7 +70,7 @@ class ListenerFileChangesDaemon {
                     }
                 } else {
                     def message = "Listener File Changes error in file/folder ${name}"
-                    println message
+                    consoleError message
                     throw new Exception(message)
                 }
             }

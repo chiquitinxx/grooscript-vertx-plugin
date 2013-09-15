@@ -16,8 +16,9 @@ class PhantomJsTests extends GroovyTestCase {
         def title = $("title")
         assert title[0].text=='Title Test',"Title is ${title[0].text}"
         def p = $("p")
-        assert p.size() == 1, 'Correct size is ' + p.size()
+        assert p.size() == 1, 'p correct size is ' + p.size()
         assert p[0].textContent == 'Test p', "p tag is correct ${p[0].textContent}"
+        assert $("li").size() == 5, 'li correct size is ' + $("li").size()
     }
 
     @PhantomJsTest(url='http://localhost:8080/grooscript-vertx/main/test')

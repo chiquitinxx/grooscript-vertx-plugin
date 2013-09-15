@@ -16,7 +16,8 @@ class GrooscriptVertxGrailsPlugin {
         "grails-app/controllers/**",
         "grails-app/domain/**",
         "grails-app/views/**",
-        "scripts/Message.groovy",
+        "src/Message.groovy",
+        "src/groovy/MyTemplate.groovy",
         "web-app/css/**",
         "web-app/images/**",
         "web-app/js/Message.js",
@@ -29,11 +30,9 @@ class GrooscriptVertxGrailsPlugin {
     def author = "Jorge Franco Leza"
     def authorEmail = "grooscript@gmail.com"
     def description = '''\
-Use your groovy code in your gsps thanks to grooscript. Use vert.x to use events between server and gsps.
-Automatically reload pages while developing with Vert.x.
-GrooScript info http://grooscript.org
-Vert.x info http://vertx.io
-More info about this plugin http://github.com/chiquitinxx/grooscript-vertx-plugin/
+Use your groovy code in your gsps thanks to GrooScript.
+It converts the code to javascript and your groovy code will run in your browser.
+Also use Vert.x to use events between server and gsps.
 '''
 
     // URL to the plugin's documentation
@@ -63,36 +62,55 @@ More info about this plugin http://github.com/chiquitinxx/grooscript-vertx-plugi
                 host = 'localhost'
             }
 
-            eventBus(VertxEventBus, port, host) { bean ->
-            }
+            eventBus(VertxEventBus, port, host,
+                    application.config.vertx?.eventBus?.inboundPermitted?:[],
+                    application.config.vertx?.eventBus?.outboundPermitted?:[],
+                    application.config.vertx?.testing ? true : false)
         }
     }
 
-    def initGrooscriptDaemon(application) {
+    def initGrooScriptDaemon(application) {
 
-        def source = application.config.grooscript?.source
-        def destination = application.config.grooscript?.destination
-        def options = application.config.grooscript?.options
+        if (Environment.current == Environment.DEVELOPMENT) {
 
-        def doAfter = { list ->
-            if (list.size() > 0) {
-                sendReloadNotificationIfNeeded()
+            def doAfter = { list ->
+                if (list.size() > 0) {
+                    sendReloadNotificationIfNeeded()
+                }
             }
-        }
 
-        launchFileChangesListeners(application, doAfter)
+            launchFileChangesListeners(application, doAfter)
 
-        //By default
-        if (!options) {
-            options = [classpath:'src/groovy']
-        }
+            def source = application.config.grooscript?.daemon?.source
+            def destination = application.config.grooscript?.daemon?.destination
+            def options = application.config.grooscript?.daemon?.options
+            def doAfterOption = application.config.grooscript?.daemon?.doAfter
 
-        //Start the daemon if source and destination are ok
-        if (source && destination) {
-            GrooScript.clearAllOptions()
-            GrooScript.startConversionDaemon(source, destination, options, doAfter)
-        } else {
-            consoleMessage "GrooScript daemon not started."
+            //By default
+            if (!options) {
+                options = [classpath:'src/groovy']
+            } else {
+                if (!options.classpath) {
+                    options.classpath = 'src/groovy'
+                }
+            }
+
+            //Start the daemon if source and destination are ok
+            if (source && destination) {
+                GrooScript.clearAllOptions()
+                def doAfterDaemon
+                if (doAfterOption && doAfterOption instanceof Closure) {
+                    doAfterDaemon = { list ->
+                        doAfter(list)
+                        doAfterDaemon(list)
+                    }
+                } else {
+                    doAfterDaemon = doAfter
+                }
+                GrooScript.startConversionDaemon(source, destination, options, doAfterDaemon)
+            } else {
+                consoleMessage "GrooScript daemon not started."
+            }
         }
     }
 
@@ -168,15 +186,24 @@ More info about this plugin http://github.com/chiquitinxx/grooscript-vertx-plugi
     }
 
     def doWithApplicationContext = { applicationContext ->
-        initGrooscriptDaemon(application)
+        initGrooScriptDaemon(application)
+        if (application.config.vertx?.testing) {
+            applicationContext.eventBus.onEvent('testing', { message ->
+                println 'Message recieved body: ' + message.body
+                message.reply([info: 'recieved'])
+                applicationContext.eventBus.sendMessage(VertxEventBus.CHANNEL_RELOAD, [name: 'reloadChannel'])
+                applicationContext.eventBus.sendMessage('testingIncoming', [name: 'testingIncomingChannel'])
+            })
+        }
     }
 
+    /* It doesnt works property with .groovy files in src/groovy
     def onChange = { event ->
-    }
+    }*/
 
     def onConfigChange = { event ->
         GrooScript.stopConversionDaemon()
-        initGrooscriptDaemon(application)
+        initGrooScriptDaemon(application)
     }
 
     def onShutdown = { event ->

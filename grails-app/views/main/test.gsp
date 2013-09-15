@@ -12,13 +12,7 @@
 <body>
 
     <p>Test p</p>
-    <grooscript:template>
-        ul {
-            li 'One'
-            li 'Two'
-            li 'Three'
-        }
-    </grooscript:template>
+    <grooscript:template filePath="src/groovy/MyTemplate.groovy"/>
 
     <button type="button" id="addButton" onclick="grooscriptEvents.sendMessage('redraw',null);">Add</button>
 

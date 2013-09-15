@@ -9,7 +9,6 @@
   </component>
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
-    <content url="file://$MODULE_DIR$/target/plugins/hibernate-2.2.4" />
     <content url="file://$MODULE_DIR$/target/plugins/release-2.2.1">
       <sourceFolder url="file://$MODULE_DIR$/target/plugins/release-2.2.1/src/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/target/plugins/release-2.2.1/src/groovy" isTestSource="false" />

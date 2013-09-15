@@ -1,7 +1,3 @@
-import org.grooscript.grails.plugin.VertxEventBus
-
-// configuration for plugin testing - will not be included in the plugin zip
-
 log4j = {
     // Example of changing the log pattern for the default console
     // appender:
@@ -30,7 +26,7 @@ log4j = {
 
 vertx {
     eventBus {
-        port = 8085
+        port = 8086
         //host = 'localhost'
     }
     listener {
@@ -41,11 +37,14 @@ vertx {
             }
         }
     }
+    testing = true
 }
 
 grooscript {
-    source = ['scripts/Message.groovy']
-    destination = 'web-app/js'
+    daemon {
+        source = ['src/Message.groovy']
+        destination = 'web-app/js'
+    }
 }
 
 grails.resources.modules = {

@@ -5,11 +5,7 @@ import grails.test.mixin.TestMixin
 import grails.test.mixin.support.GrailsUnitTestMixin
 import org.grails.plugin.resource.ResourceTagLib
 import org.grooscript.GrooScript
-import org.grooscript.grails.util.Builder
 import spock.lang.Specification
-
-import static org.grooscript.grails.util.Util.getDOMAIN_JS_EXTERNAL
-import static org.grooscript.grails.util.Util.getSEP
 
 /**
  * @author Jorge Franco
@@ -26,6 +22,14 @@ class GrooScriptVertxTagLibSpec extends Specification {
         GrooScriptVertxTagLib.metaClass.r = resourceTaglib
     }
 
+    void cleanup() {
+        try {
+            applicationContext.getBean(GrooScriptVertxTagLib.VERTX_EVENTBUS_BEAN)?.close()
+        } catch (e) {
+
+        }
+    }
+
     static final CODE = 'code example'
 
     void 'test code taglib'() {
@@ -40,40 +44,47 @@ class GrooScriptVertxTagLibSpec extends Specification {
         1 * GrooScript.convert(CODE)
     }
 
+    static final FILE_PATH = 'src/groovy/org/grooscript/grails/util/Builder.groovy'
+
+    void 'test code taglib with a file'() {
+        given:
+        GroovySpy(GrooScript, global: true)
+
+        when:
+        applyTemplate("<grooscript:code filePath='${FILE_PATH}'/>")
+
+        then:
+        1 * resourceTaglib.script(_)
+        1 * GrooScript.convert(new File(FILE_PATH).text)
+    }
+
+    void 'test init vertx variable'() {
+        given:
+        initVertx()
+
+        when:
+        applyTemplate("<grooscript:initVertx/>")
+
+        then:
+        1 * resourceTaglib.require([module: 'vertx'])
+        1 * resourceTaglib.script(_)
+    }
+
     void 'test reload page'() {
+        given:
+        initVertx()
 
-        given: 'add vertx if necesary'
-        if (hasVertx) {
-            //BEWARE beans stay for next tests
-            defineBeans {
-                "${GrooScriptVertxTagLib.VERTX_EVENTBUS_BEAN}"(VertxEventBus,'localhost',8989)
-            }
-        }
+        when:
+        applyTemplate("<grooscript:reloadPage/>")
 
-        when: 'applying grooscript reloadPage taglib'
-        def result = applyTemplate("<grooscript:reloadPage${withoutJsLib?'WithoutJsLibs':''}/>")
-
-        then: 'call require if hasVertex'
-        (hasVertx && !withoutJsLib?1:0) * resourceTaglib.require(_) >> CODE
-        (hasVertx?1:0) * resourceTaglib.script(_)
+        then:
+        1 * resourceTaglib.require(_)
+        2 * resourceTaglib.script(_)
         0 * _
-        expectedResult == result
-
-        and:
-        if (hasVertx) {
-            applicationContext.getBean(GrooScriptVertxTagLib.VERTX_EVENTBUS_BEAN)?.close()
-        }
-
-        where:
-        withoutJsLib | hasVertx | expectedResult
-        true         | false    | ''
-        false        | false    | ''
-        false        | true     | CODE
-        true         | true     | ''
     }
 
     void 'test template'() {
-        given: 'mock grooscript'
+        given:
         GroovySpy(GrooScript, global: true)
 
         when:
@@ -85,6 +96,21 @@ class GrooScriptVertxTagLibSpec extends Specification {
         1 * resourceTaglib.require([module: 'grooscript'])
         1 * resourceTaglib.require([module: 'grooscriptGrails'])
         1 * GrooScript.convert('Builder.process { -> assert true}')
+        result.startsWith "\n<div id='fTemplate"
+    }
+
+    static final FILE_PATH_TEMPLATE = 'src/groovy/MyTemplate.groovy'
+
+    void 'test template with a file'() {
+        given:
+        GroovySpy(GrooScript, global: true)
+
+        when:
+        def result = applyTemplate("<grooscript:template filePath='${FILE_PATH_TEMPLATE}'/>")
+
+        then:
+        1 * resourceTaglib.script(_)
+        1 * GrooScript.convert("Builder.process { -> ${new File(FILE_PATH_TEMPLATE).text}}")
         result.startsWith "\n<div id='fTemplate"
     }
 
@@ -117,5 +143,11 @@ class GrooScriptVertxTagLibSpec extends Specification {
         domainClassName   | numberTimes
         FAKE_NAME         | 0
         DOMAIN_CLASS_NAME | 1
+    }
+
+    private initVertx() {
+        defineBeans {
+            "${GrooScriptVertxTagLib.VERTX_EVENTBUS_BEAN}"(VertxEventBus,'localhost',8989)
+        }
     }
 }

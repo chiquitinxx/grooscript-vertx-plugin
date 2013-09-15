@@ -38,34 +38,24 @@
     }
 </grooscript:code>
 
-<r:script>
-
-var eb = new vertx.EventBus('http://localhost:8085/eventbus')
-
-eb.onopen = function() {
-    console.log('EventBus started');
-}
-
-
-</r:script>
+<grooscript:reloadPage/>
 
 <r:script>
-    function addOne() {
-        eb.registerHandler('one', function(message) {
-            console.log('Got message on one: ' + JSON.stringify(message));
+    function listenTesting() {
+        grooscriptEventBus.registerHandler('testingIncoming', function(message) {
+            console.log('Got message on testingIncoming: ' + JSON.stringify(message));
         });
-        eb.registerHandler('reloadPage', function(message) {
-
-            console.log('Got message on reloadPage: ' + JSON.stringify(message));
-            if (message.reload == true) {
-                window.location.reload();
-            }
-
-        });
+    }
+    function sendTestingMessage() {
+        grooscriptEventBus.send('testing',{ message: 'hello'}, function(message) {
+            console.log('Done send testing message.');
+            console.log('Recieved:'+JSON.stringify(message));
+        })
     }
 </r:script>
 
-<button type="button" onclick="addOne();">One</button>
+<button type="button" onclick="listenTesting();">Listen Testing</button>
+<button type="button" onclick="sendTestingMessage();">Send Testing Message</button>
 
 <r:layoutResources/>
 
