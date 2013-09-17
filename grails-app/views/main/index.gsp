@@ -56,7 +56,12 @@
             console.log('Done send testing message.');
             console.log('Recieved:'+JSON.stringify(message));
         })*/
-        grooscriptEventBus.send('testing',{ message: 'hello'})
+        grooscriptEventBus.send('testing',{ message: 'hello'});
+        /*setTimeout(
+                function()
+                {
+                    alert('hola!');
+                }, 2000);*/
     }
 </r:script>
 

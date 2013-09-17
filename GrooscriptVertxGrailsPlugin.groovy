@@ -154,6 +154,7 @@ Also use Vert.x to use events between server and gsps.
             def listModelFiles = application.config.grooscript?.model
 
             if (listModelFiles && listModelFiles instanceof List) {
+                new File(DOMAIN_JS_DIR).mkdirs()
                 ListenerFileChangesDaemon listener = new ListenerFileChangesDaemon(notifyAllChanges: true)
                 listener.sourceList = listModelFiles.collect { domainItem ->
                     "${DOMAIN_DIR}${SEP}${domainItem.name.replaceAll(/\./,SEP)}.groovy"

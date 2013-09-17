@@ -41,6 +41,7 @@ class GrooScriptVertxTagLibSpec extends Specification {
 
         then: 'call convert and script'
         1 * resourceTaglib.script(_)
+        1 * resourceTaglib.require([module: 'grooscript'])
         1 * GrooScript.convert(CODE)
     }
 
@@ -55,6 +56,7 @@ class GrooScriptVertxTagLibSpec extends Specification {
 
         then:
         1 * resourceTaglib.script(_)
+        1 * resourceTaglib.require([module: 'grooscript'])
         1 * GrooScript.convert(new File(FILE_PATH).text)
     }
 
@@ -78,7 +80,7 @@ class GrooScriptVertxTagLibSpec extends Specification {
         applyTemplate("<grooscript:reloadPage/>")
 
         then:
-        1 * resourceTaglib.require(_)
+        1 * resourceTaglib.require([module: 'vertx'])
         2 * resourceTaglib.script(_)
         0 * _
     }
@@ -180,6 +182,21 @@ class GrooScriptVertxTagLibSpec extends Specification {
 
         then:
         2 * resourceTaglib.script(_)
+        1 * resourceTaglib.require([module: 'grooscript'])
+        1 * resourceTaglib.require([module: 'vertx'])
+        0 * _
+    }
+
+    void 'test onVertxStarted'() {
+        given:
+        initVertx()
+
+        when:
+        applyTemplate("<grooscript:onVertxStarted>assert true</grooscript:onVertxStarted>")
+
+        then:
+        2 * resourceTaglib.script(_)
+        1 * resourceTaglib.require([module: 'grooscript'])
         1 * resourceTaglib.require([module: 'vertx'])
         0 * _
     }

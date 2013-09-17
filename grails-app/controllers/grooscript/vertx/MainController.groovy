@@ -7,4 +7,6 @@ class MainController {
     def test() { }
 
     def templating() { }
+
+    def vertxEvents() { }
 }

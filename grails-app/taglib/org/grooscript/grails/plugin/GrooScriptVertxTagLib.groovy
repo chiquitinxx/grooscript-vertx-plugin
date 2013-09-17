@@ -98,6 +98,7 @@ class GrooScriptVertxTagLib {
             script = body()
         }
         if (script) {
+            r.require(module: 'grooscript')
             try {
                 def result = GrooScript.convert(script)
                 r.script() {
@@ -244,7 +245,7 @@ class GrooScriptVertxTagLib {
     }
 
     /**
-     * grooscript:onServerEvent
+     * grooscript:onServerEvent When a vertx message arrives
      * name - name of the event
      */
     def onServerEvent = { attrs, body ->
@@ -254,6 +255,7 @@ class GrooScriptVertxTagLib {
             String name = attrs.name
             if (name) {
                 initVertx()
+                r.require(module: 'grooscript')
 
                 r.script() {
                     def script = body()
@@ -266,6 +268,28 @@ class GrooScriptVertxTagLib {
             } else {
                 consoleError 'GrooScriptVertxTagLib onServerEvent need define name property'
             }
+        }
+    }
+
+    /**
+     * grooscript:onVertxStarted execute when Vertx started
+     */
+    def onVertxStarted = { attrs, body ->
+
+        if (applicationContext.containsBean(VERTX_EVENTBUS_BEAN)) {
+
+            initVertx()
+            r.require(module: 'grooscript')
+
+            r.script() {
+                def script = body()
+                String result = GrooScript.convert("{ -> ${script}}").trim()
+                result = removeLastSemicolon(result)
+                result = result.replaceFirst(/function\(it\)/,"function ${nextVertxOnLoadFunctionName}()")
+
+                out << "\n${cleanUpConvertedCode(result)};\n"
+            }
+
         }
     }
 
