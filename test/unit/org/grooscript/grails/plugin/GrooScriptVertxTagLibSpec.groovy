@@ -99,6 +99,16 @@ class GrooScriptVertxTagLibSpec extends Specification {
         result.startsWith "\n<div id='fTemplate"
     }
 
+    void 'very basic test template options'() {
+        when:
+        def result = applyTemplate("<grooscript:template functionName='jarJar'" +
+                " itemSelector='#anyId' renderOnReady=\"${true}\">assert true</grooscript:template>")
+
+        then:
+        1 * resourceTaglib.script(_)
+        !result
+    }
+
     static final FILE_PATH_TEMPLATE = 'src/groovy/MyTemplate.groovy'
 
     void 'test template with a file'() {
@@ -149,5 +159,28 @@ class GrooScriptVertxTagLibSpec extends Specification {
         defineBeans {
             "${GrooScriptVertxTagLib.VERTX_EVENTBUS_BEAN}"(VertxEventBus,'localhost',8989)
         }
+    }
+
+    void 'test onEvent'() {
+        when:
+        applyTemplate("<grooscript:onEvent name='nameEvent'>assert true</grooscript:onEvent>")
+
+        then:
+        1 * resourceTaglib.script(_)
+        1 * resourceTaglib.require([module: 'clientEvents'])
+        0 * _
+    }
+
+    void 'test onServerEvent'() {
+        given:
+        initVertx()
+
+        when:
+        applyTemplate("<grooscript:onServerEvent name='nameEvent'>assert true</grooscript:onServerEvent>")
+
+        then:
+        2 * resourceTaglib.script(_)
+        1 * resourceTaglib.require([module: 'vertx'])
+        0 * _
     }
 }

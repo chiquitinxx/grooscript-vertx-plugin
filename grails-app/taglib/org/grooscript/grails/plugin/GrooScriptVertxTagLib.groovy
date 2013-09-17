@@ -101,7 +101,7 @@ class GrooScriptVertxTagLib {
             try {
                 def result = GrooScript.convert(script)
                 r.script() {
-                    out << result
+                    out << cleanUpConvertedCode(result)
                 }
             } catch (e) {
                 log.error "GrooScriptVertxTagLib.code error converting: ${e.message}", e
@@ -109,6 +109,19 @@ class GrooScriptVertxTagLib {
         }
     }
 
+    private cleanUpConvertedCode(String jsCode) {
+        jsCode.replaceAll(/this\./,'')
+    }
+
+    /**
+     * grooscript: template
+     *
+     * filePath - optional - path to file to be used as template, from project dir
+     * functionName - optional - name of the function that renders the template
+     * itemSelector - optional - jQuery string selector where html generated will be placed
+     * renderOnReady - optional defaults true - if template will be render onReady page event
+     * listenEvents - optional - string list of events that render the page
+     */
     def template = { attrs, body ->
         def script
         if (attrs.filePath) {
@@ -121,9 +134,8 @@ class GrooScriptVertxTagLib {
             script = body()
         }
         if (script) {
-            def functionName = 'fTemplate'+new Date().time.toString()
+            def functionName = attrs.functionName ?: 'fTemplate'+new Date().time.toString()
             String result = GrooScript.convert("Builder.process { -> ${script}}").trim()
-            result = result.replaceAll(/this\./,'')
 
             r.require(module: 'grooscript')
             r.require(module: 'kimbo')
@@ -131,16 +143,20 @@ class GrooScriptVertxTagLib {
 
             processTemplateEvents(attrs.listenEvents, functionName)
 
-            out << "\n<div id='${functionName}'></div>\n"
+            if (!attrs.itemSelector) {
+                out << "\n<div id='${functionName}'></div>\n"
+            }
 
             r.script() {
                 out << "\nfunction ${functionName}() {\n"
-                out << "  var code = ${result};\n"
-                out << "  \$('#${functionName}').html(code.html);\n"
+                out << "  var code = ${cleanUpConvertedCode(result)};\n"
+                out << "  \$('" + (attrs.itemSelector ? attrs.itemSelector : "#${functionName}") + "').html(code.html);\n"
                 out << '};\n'
-                out << '$(document).ready(function() {\n'
-                out << "  ${functionName}();\n"
-                out << '});\n'
+                if (!attrs.renderOnReady) {
+                    out << '$(document).ready(function() {\n'
+                    out << "  ${functionName}();\n"
+                    out << '});\n'
+                }
             }
         }
     }
@@ -150,7 +166,7 @@ class GrooScriptVertxTagLib {
             r.require(module: 'clientEvents')
             r.script() {
                 listEvents.each { nameEvent ->
-                    out << "\ngrooscriptEvents.onEvent('${nameEvent}', ${functionName})\n"
+                    out << "\ngrooscriptEvents.onEvent('${nameEvent}', ${functionName});\n"
                 }
             }
         }
@@ -204,5 +220,56 @@ class GrooScriptVertxTagLib {
         def nameFile = "${DOMAIN_DIR}${SEP}${getPathFromClassName(domainClass)}"
         //println 'DOMAIN CLASS FILE: ' + nameFile
         new File(nameFile)
+    }
+
+    /**
+     * grooscript:onEvent
+     * name - name of the event
+     */
+    def onEvent = { attrs, body ->
+        String name = attrs.name
+        if (name) {
+            r.require(module: 'clientEvents')
+
+            r.script() {
+                def script = body()
+                def result = GrooScript.convert("{ message -> ${script}}").trim()
+                result = removeLastSemicolon(result)
+
+                out << "\ngrooscriptEvents.onEvent('${name}', ${cleanUpConvertedCode(result)});\n"
+            }
+        } else {
+            consoleError 'GrooScriptVertxTagLib onEvent need define name property'
+        }
+    }
+
+    /**
+     * grooscript:onServerEvent
+     * name - name of the event
+     */
+    def onServerEvent = { attrs, body ->
+
+        if (applicationContext.containsBean(VERTX_EVENTBUS_BEAN)) {
+
+            String name = attrs.name
+            if (name) {
+                initVertx()
+
+                r.script() {
+                    def script = body()
+                    String result = GrooScript.convert("{ message -> ${script}}").trim()
+                    result = removeLastSemicolon(result)
+
+                    out << "\nfunction ${nextVertxOnLoadFunctionName}() {\n    ${EVENTBUS_JS_NAME}"+
+                            ".registerHandler('${name}', ${cleanUpConvertedCode(result)})};\n"
+                }
+            } else {
+                consoleError 'GrooScriptVertxTagLib onServerEvent need define name property'
+            }
+        }
+    }
+
+    private removeLastSemicolon(String code) {
+        code.substring(0, code.lastIndexOf(';'))
     }
 }

@@ -7,7 +7,7 @@
 <html>
 <head>
     <r:require modules="vertx,grooscript,kimbo"/>
-    <link rel="stylesheet" type="text/css" href="../css/style.css">
+    <r:external uri="/css/style.css"/>
     <title>Title</title>
     <r:layoutResources/>
 </head>
@@ -20,6 +20,8 @@
 <label>Text:</label>
 <input id="item" type="text" value=""/>
 <button type="button" onclick="addToList($('#item').val());">Add</button>
+
+<div id="gotIncoming"></div>
 
 <grooscript:code>
     def list = []
@@ -40,21 +42,24 @@
 
 <grooscript:reloadPage/>
 
+<grooscript:onServerEvent name='testingIncoming'>
+    console.log 'Got message in testingIncoming!' + JSON.stringify(message)
+    $('#gotIncoming').text($('#gotIncoming').text() + '.')
+</grooscript:onServerEvent>
+<grooscript:onServerEvent name='testingIncoming'>
+    console.log 'One more!'
+</grooscript:onServerEvent>
+
 <r:script>
-    function listenTesting() {
-        grooscriptEventBus.registerHandler('testingIncoming', function(message) {
-            console.log('Got message on testingIncoming: ' + JSON.stringify(message));
-        });
-    }
     function sendTestingMessage() {
-        grooscriptEventBus.send('testing',{ message: 'hello'}, function(message) {
+        /*grooscriptEventBus.send('testing',{ message: 'hello'}, function(message) {
             console.log('Done send testing message.');
             console.log('Recieved:'+JSON.stringify(message));
-        })
+        })*/
+        grooscriptEventBus.send('testing',{ message: 'hello'})
     }
 </r:script>
 
-<button type="button" onclick="listenTesting();">Listen Testing</button>
 <button type="button" onclick="sendTestingMessage();">Send Testing Message</button>
 
 <r:layoutResources/>

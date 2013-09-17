@@ -31,6 +31,20 @@
         var numberTimes = 0;
     </r:script>
 
+    <grooscript:code>
+        def sing = { name ->
+            console.log 'Singing...' + name
+        }
+
+        def doSomething = { mapOfClosures ->
+            mapOfClosures.each { key, value ->
+                value(key)
+            }
+        }
+
+        $(document).ready doSomething([groovy: sing, grails: sing, grooscript: sing])
+    </grooscript:code>
+
     <r:layoutResources/>
 
 </body>

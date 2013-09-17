@@ -5,4 +5,6 @@ class MainController {
     def index() { }
 
     def test() { }
+
+    def templating() { }
 }

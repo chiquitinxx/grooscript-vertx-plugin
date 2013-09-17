@@ -31,4 +31,11 @@ class PhantomJsTests extends GroovyTestCase {
         assert $("p").size() == 2, 'Correct size is ' + $("p").size()
         assert $("h3").text() == 'Number of times: 1', 'Correct text is >' + $("h3").text() +'<'
     }
+
+    @PhantomJsTest(url='http://localhost:8080/grooscript-vertx/main/templating')
+    void testTemplateOptions() {
+        assert $("#template1").html() != '','1->' +$ ("#template1").html() + '<'
+        assert $("#template2").html() != '','2->' +$ ("#template2").html() + '<'
+        assert $("#template3").html() == '','3->' +$ ("#template3").html() + '<'
+    }
 }
