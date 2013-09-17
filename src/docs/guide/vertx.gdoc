@@ -6,6 +6,8 @@ vertx {
     eventBus {
         port = 8085
         //host = 'localhost'
+        //inboundPermitted = [["address": 'myChannel']}
+        //outboundPermitted
     }
     listener {
         source = ['web-app/css/style.css']
@@ -24,6 +26,10 @@ vertx {
 
 @host@ optional - by default localhost, in the url to connect Vert.x.
 
+@inboundPermitted@ optional - you can define channels where js client can write, see Vert.x documentation.
+
+@outboundPermitted@ optional - channels that can read the js clients. 'reloadPage channel' is always added by default.
+
 @listener@ optional - you can define a listener, that detect file changes all the time.
 
 @source@ list of files / folders to detect changes.
@@ -35,3 +41,6 @@ The listener will run in background all the time. Only works in development.
 If detects any change, then send an event to eventbus, and you can automatically reload the gsp with the tag
 @<grooscript:reloadPage/>@. The reload is automatic, all the page is reloaded.
 Is very useful when you changing styles or test any javascript code in you browser.
+
+You can use Vert.x client alone in your pages using [initVertx|tags] tag. Then you will have a javascript
+variable called @grooscriptEventBus@ with the Vert.x js eventBus,

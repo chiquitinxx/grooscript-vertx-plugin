@@ -1,17 +1,8 @@
-h1. example
+h1. reloadPage
 
-h2. Purpose
-
-This is an example reference item.
-
-h2. Examples
-
-You can use code snippets:
+Your page will reload automatically when 'reloadPage' event is launched in the server.
+Event is launched if vert.x is up and any spied file changes. Only in development mode.
 
 {code}
-def example = new Example()
+<grooscript:reloadPage/>
 {code}
-
-h2. Description
-
-And provide a detailed description

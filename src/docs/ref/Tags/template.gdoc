@@ -1,0 +1,33 @@
+h1. template
+
+Create a template that will be renderer in the client.
+
+{code}
+<grooscript:template listenEvents="['redraw']">
+    def number = numberTimes++
+    h3 'Number of times: ' + number
+    number.times { num ->
+        p ' '+num
+    }
+</grooscript:template>
+
+<r:script>
+    var numberTimes = 0;
+</r:script>
+{code}
+
+{code}
+<grooscript:template filePath="src/groovy/MyTemplate.groovy" functionName="template1"/>
+<grooscript:template filePath="src/groovy/MyTemplate.groovy" itemSelector="#template2"/>
+<grooscript:template filePath="src/groovy/MyTemplate.groovy" renderOnReady="false" itemSelector="#template3"/>
+{code}
+
+@filePath@ - optional - path to file to be used as template, from project dir
+
+@functionName@ - optional - name of the function that renders the template
+
+@itemSelector@ - optional - jQuery string selector where html generated will be placed
+
+@renderOnReady@ - optional defaults true - if template will be render onReady page event
+
+@listenEvents@ - optional - string list of events that render the page

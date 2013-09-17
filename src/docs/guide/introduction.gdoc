@@ -1,10 +1,11 @@
 This plugin helps you creating lot of dynamic code used in your pages, but in Groovy, instead of javascript.
 Will speed up your developing, working with the tools you know, like Spock, Codenarc, Gradle,...
 Also use Vert.x for reloading pages and give you an event tool between server and browser.
+This plugin need resources plugin to run, remember put @<r:layoutResources/>@ in your gsps.
 
 h2. Important
 
-This plugin still in development. Is not production ready, the Groovy code not need to be converted if your source
+This plugin still in development. Is not production ready, Groovy code not need to be converted if your source
 files not changing. Javascript code have to be inserted in the pages.
 
 h2. Requisites

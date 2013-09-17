@@ -1,0 +1,7 @@
+h1. initVertx
+
+Init Vert.x eventbus in your page if Vert.x in the server is running.
+
+{code}
+<grooscript:initVertx/>
+{code}

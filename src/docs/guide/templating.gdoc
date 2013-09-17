@@ -1,13 +1,20 @@
-This is an example documentation template. The syntax format is similar to "Textile":http://textile.thresholdstate.com/.
+You can create templates using [template|tags] tag. A template is a piece of groovy code that will be
+executed inside a html builder. For example:
 
-You can apply formatting such as *bold*, _italic_ and @code@. Bullets are possible too:
+{code}
+ul {
+    5.times { number ->
+        li "${number} li item"
+    }
+}
+{code}
 
-* Bullet 1
-* Bullet 2
+The template is executed in the client, not in the server.
+You can put templates in separates files if you want to.
+You can define a jQuery selector with the elements that will be updated each time template renders.
+You can execute the template at start or when you want.
+The template can listen events to renders again.
 
-As well as numbered lists:
-
-# Number 1
-# Number 2
-
-The documentation also handles links to [guide items|guide:introduction] as well as [reference|items]
+There are two event engines that can be running in your page. Vert.x and internal event listener. Vert.x is used for
+communicate with the server, and the internal is used with templates or the model. You can listen events trigger, or
+launch the events. You can redraw a template when any data changes, or something comes from the server, ...

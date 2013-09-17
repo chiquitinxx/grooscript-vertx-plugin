@@ -1,0 +1,23 @@
+h1. code
+
+Converts groovy code to javascript and put in the page inside <r:script>. grooscript resources module added too.
+
+{code}
+<grooscript:code filePath='src/groovy/your/packet/File.groovy'>
+{code}
+
+{code}
+<grooscript:code>
+    def sing = { name ->
+        console.log 'Singing...' + name
+    }
+
+    def doSomething = { mapOfClosures ->
+        mapOfClosures.each { key, value ->
+            value(key)
+        }
+    }
+
+    $(document).ready doSomething([groovy: sing, grails: sing, grooscript: sing])
+</grooscript:code>
+{code}
