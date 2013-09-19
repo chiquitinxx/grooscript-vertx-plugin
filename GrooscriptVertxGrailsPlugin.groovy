@@ -108,6 +108,7 @@ Also use Vert.x to use events between server and gsps.
                     doAfterDaemon = doAfter
                 }
                 GrooScript.startConversionDaemon(source, destination, options, doAfterDaemon)
+                GrooScript.clearAllOptions()
             } else {
                 consoleMessage "GrooScript daemon not started."
             }
@@ -122,11 +123,18 @@ Also use Vert.x to use events between server and gsps.
         }
     }
 
+    static final GROOVY_VERSION_REQUIRED = '2.1.0'
+
     private launchFileChangesListeners(application, doAfter) {
 
         if (Environment.current == Environment.DEVELOPMENT) {
             launchConfigFileChangesListener(application, doAfter)
-            launchDomainFileChangesListener(application)
+            def groovyVersion = Class.forName('groovy.lang.GString').package.implementationVersion
+            if (groovyVersion >= GROOVY_VERSION_REQUIRED) {
+                launchDomainFileChangesListener(application)
+            } else {
+                consoleError "You need at least Groovy ${GROOVY_VERSION_REQUIRED} to work with the model."
+            }
         }
     }
 
@@ -138,6 +146,7 @@ Also use Vert.x to use events between server and gsps.
         if (listenerSource && listenerSource instanceof List) {
             ListenerFileChangesDaemon listener = new ListenerFileChangesDaemon()
             listener.sourceList = listenerSource
+            listener.nameListener = 'FILE_CHANGES'
             listener.doAfter = { list ->
                 if (afterChanges) {
                     afterChanges(list)
@@ -152,14 +161,16 @@ Also use Vert.x to use events between server and gsps.
 
         if (application.config.grooscript?.model) {
             def listModelFiles = application.config.grooscript?.model
-
+            //println '1-'+listModelFiles
             if (listModelFiles && listModelFiles instanceof List) {
                 new File(DOMAIN_JS_DIR).mkdirs()
                 ListenerFileChangesDaemon listener = new ListenerFileChangesDaemon(notifyAllChanges: true)
-                listener.sourceList = listModelFiles.collect { domainItem ->
-                    "${DOMAIN_DIR}${SEP}${domainItem.name.replaceAll(/\./,SEP)}.groovy"
+                listener.sourceList = listModelFiles.inject ([]) { listNames, domainItem ->
+                    listNames << "${DOMAIN_DIR}${SEP}${domainItem.name.replaceAll(/\./,SEP)}.groovy"
+                    listNames
                 }
-                consoleMessage('Source: '+listener.sourceList)
+                consoleMessage('Listen domain classes: '+listener.sourceList)
+                listener.nameListener = 'DOMAIN_CLASSES'
                 listener.doAfter = { list ->
                     if (list) {
                         list.each { String absolutePath ->
@@ -174,6 +185,7 @@ Also use Vert.x to use events between server and gsps.
                             } catch (e) {
                                 consoleError("Error converting $absolutePath: ${e.message}")
                             }
+                            GrooScript.clearAllOptions()
                         }
                         GrooScript.joinFiles(DOMAIN_JS_DIR, DOMAIN_CLASSES_JS_FILE)
                         if (list.size() != listModelFiles.size()) {
@@ -190,7 +202,7 @@ Also use Vert.x to use events between server and gsps.
         initGrooScriptDaemon(application)
         if (application.config.vertx?.testing) {
             applicationContext.eventBus.onEvent('testing', { message ->
-                println 'Message recieved body: ' + message.body
+                consoleMessage 'Testing message recieved body: ' + message.body
                 message.reply([info: 'recieved'])
                 applicationContext.eventBus.sendMessage(VertxEventBus.CHANNEL_RELOAD, [name: 'reloadChannel'])
                 applicationContext.eventBus.sendMessage('testingIncoming', [name: 'testingIncomingChannel'])

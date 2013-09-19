@@ -1,7 +1,7 @@
 package org.grooscript.grails.plugin
 
+import groovyx.gpars.GParsPool
 import groovyx.gpars.agent.Agent
-import static groovyx.gpars.GParsPool.withPool
 import static groovyx.gpars.dataflow.Dataflow.task
 import static org.grooscript.grails.util.Util.*
 
@@ -19,6 +19,7 @@ class ListenerFileChangesDaemon {
     boolean continueTask = false
     def actualTask
     def notifyAllChanges = false
+    def nameListener
 
     /**
      * Start the daemon
@@ -35,8 +36,12 @@ class ListenerFileChangesDaemon {
                     }
                     sleep(REST_TIME)
                 }
-            }
-            consoleMessage 'Listener File Changes Started.'
+            }.then( {
+                consoleMessage 'Listener File Changes Terminated.'
+            }, { e ->
+                consoleError 'Listener ended by uncontrolled error: ' + e.message
+            })
+            consoleMessage 'Listener File Changes Started.' + (nameListener ? nameListener : '')
         } else {
             consoleError 'Listener File Changes needs sourceList to run.'
         }
@@ -47,7 +52,6 @@ class ListenerFileChangesDaemon {
             continueTask = false
             actualTask.join()
         }
-        consoleMessage 'Listener File Changes Terminated.'
     }
 
     private work() {
@@ -55,7 +59,7 @@ class ListenerFileChangesDaemon {
         Agent agent = new Agent([])
 
         //Check all files and all files in dirs
-        withPool {
+        GParsPool.withPool {
             sourceList.eachParallel { name ->
                 def file = new File(name)
                 if (file && (file.isDirectory() || file.isFile())) {
@@ -85,16 +89,17 @@ class ListenerFileChangesDaemon {
         //Only add if change, 1st time will be ignored
         def add = false
         if (dates."${file.absolutePath}") {
-            change = !(dates."${file.absolutePath}"==file.lastModified())
+            change = !(dates."${file.absolutePath}" == file.lastModified())
             add = true
         } else {
             change = true
         }
+        //println "${file.absolutePath} -O- ${file.lastModified()} Change: ${change}"
         if (change) {
+            dates."${file.absolutePath}" = file.lastModified()
             if (add || notifyAllChanges) {
                 agent << { it.add file.absolutePath }
             }
-            dates."${file.absolutePath}" = file.lastModified()
         }
     }
 }

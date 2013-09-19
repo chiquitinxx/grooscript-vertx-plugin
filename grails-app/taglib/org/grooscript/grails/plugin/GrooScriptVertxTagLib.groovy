@@ -175,6 +175,10 @@ class GrooScriptVertxTagLib {
         }
     }
 
+    /**
+     * grooscript:model
+     * domainClass - REQUIRED name of the model class
+     */
     def model = { attrs ->
         if (!attrs.domainClass || !(attrs.domainClass instanceof String)) {
             log.error "GrooScriptVertxTagLib.model: have to define domainClass property as a String"
@@ -191,16 +195,18 @@ class GrooScriptVertxTagLib {
         grailsApplication.domainClasses.find { it.fullName == nameClass }
     }
 
-    private prepareDomainClassJsFile(String domainClass) {
+    /**
+     * Do a manual domainClasses generation
+     * @param domainClass
+     */
+    def prepareDomainClassJsFile(String domainClass) {
         try {
             GrooScript.clearAllOptions()
             GrooScript.setConversionProperty('customization', {
                 ast(org.grooscript.asts.DomainClass)
-                //ast(TypeChecked)
             })
             GrooScript.setOwnClassPath(['src/groovy'])
             File domainFile = getDomainFile(domainClass)
-            //println 'SOURCE *********************\n'+domainFile.text
             if (domainFile) {
                 try {
                     GrooScript.convert(domainFile.path, DOMAIN_JS_DIR)
@@ -210,6 +216,7 @@ class GrooScriptVertxTagLib {
             } else {
                 consoleError 'GrooScriptVertxTagLib Error finding domain class ' + domainClass.name
             }
+            GrooScript.clearAllOptions()
         } catch (e) {
             consoleError 'GrooScriptVertxTagLib Error creating domain class js file ' + e.message
         }

@@ -21,7 +21,7 @@ class Util {
     }
 
     static consoleError(message) {
-        println "\n${PLUGIN_MESSAGE} [ERROR] $message"
+        println "\n\u001B[91m${PLUGIN_MESSAGE} [ERROR] $message\u001B[0m"
     }
 
 }
