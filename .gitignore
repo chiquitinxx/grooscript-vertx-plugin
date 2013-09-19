@@ -6,3 +6,6 @@ grails-grooscript-vertx-0.2.3.zip
 domainClasses.js
 ClientEventHandler.js
 Builder.js
+plugin.iml
+grooscript-0.3.2-SNAPSHOT.jar
+plugin-grailsPlugins.iml

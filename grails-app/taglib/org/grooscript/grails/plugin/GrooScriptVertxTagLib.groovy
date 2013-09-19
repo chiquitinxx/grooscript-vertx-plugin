@@ -100,6 +100,7 @@ class GrooScriptVertxTagLib {
         if (script) {
             r.require(module: 'grooscript')
             try {
+                GrooScript.clearAllOptions()
                 def result = GrooScript.convert(script)
                 r.script() {
                     out << cleanUpConvertedCode(result)
@@ -136,6 +137,7 @@ class GrooScriptVertxTagLib {
         }
         if (script) {
             def functionName = attrs.functionName ?: 'fTemplate'+new Date().time.toString()
+            GrooScript.clearAllOptions()
             String result = GrooScript.convert("Builder.process { -> ${script}}").trim()
 
             r.require(module: 'grooscript')
@@ -234,6 +236,7 @@ class GrooScriptVertxTagLib {
 
             r.script() {
                 def script = body()
+                GrooScript.clearAllOptions()
                 def result = GrooScript.convert("{ message -> ${script}}").trim()
                 result = removeLastSemicolon(result)
 
@@ -259,6 +262,7 @@ class GrooScriptVertxTagLib {
 
                 r.script() {
                     def script = body()
+                    GrooScript.clearAllOptions()
                     String result = GrooScript.convert("{ message -> ${script}}").trim()
                     result = removeLastSemicolon(result)
 
@@ -283,6 +287,7 @@ class GrooScriptVertxTagLib {
 
             r.script() {
                 def script = body()
+                GrooScript.clearAllOptions()
                 String result = GrooScript.convert("{ -> ${script}}").trim()
                 result = removeLastSemicolon(result)
                 result = result.replaceFirst(/function\(it\)/,"function ${nextVertxOnLoadFunctionName}()")

@@ -126,7 +126,7 @@ Also use Vert.x to use events between server and gsps.
 
         if (Environment.current == Environment.DEVELOPMENT) {
             launchConfigFileChangesListener(application, doAfter)
-            //launchDomainFileChangesListener(application)
+            launchDomainFileChangesListener(application)
         }
     }
 
