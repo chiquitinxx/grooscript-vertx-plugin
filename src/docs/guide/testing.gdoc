@@ -1,13 +1,27 @@
-This is an example documentation template. The syntax format is similar to "Textile":http://textile.thresholdstate.com/.
+The plugin adds a new testing phase, @phantomjs@, you can add new tests to @test/phantomjs@. Then you can do
+functional tests using PhantomJsTest annotation, that comes with GrooScript. That annotation runs a PhantomJs test,
+evaluating then code inside the method (converted jo javascript). You need "PhantomJs":http://phantomjs.org installed
+in your system and setup path in your Config.groovy
 
-You can apply formatting such as *bold*, _italic_ and @code@. Bullets are possible too:
+{code}
+phantomjs.path = '/anyPath/phantomjs'
+{code}
 
-* Bullet 1
-* Bullet 2
+This tests run better extending GroovyTestCase, and will run after test application is up.
+You have to put complete url of your test environment.
 
-As well as numbered lists:
+{code}
+import org.grooscript.asts.PhantomJsTest
 
-# Number 1
-# Number 2
+class PhantomJsTests extends GroovyTestCase {
 
-The documentation also handles links to [guide items|guide:introduction] as well as [reference|items]
+    @PhantomJsTest(url='http://localhost:8080/grooscript-vertx/main/test')
+    void testDefaultController() {
+        def title = $("title")
+        assert title[0].text=='Title Test',"Title is ${title[0].text}"
+    }
+}
+{code}
+
+If you use in Spock, then annotate a private method, and then use from your Spock test.
+Spock @where:@ clause not working.

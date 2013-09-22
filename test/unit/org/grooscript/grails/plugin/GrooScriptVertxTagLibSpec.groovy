@@ -181,7 +181,7 @@ class GrooScriptVertxTagLibSpec extends Specification {
 
         then:
         2 * resourceTaglib.script(_)
-        1 * resourceTaglib.require([module: 'grooscript'])
+        1 * resourceTaglib.require([module: 'grooscriptGrails'])
         1 * resourceTaglib.require([module: 'vertx'])
         0 * _
     }
@@ -195,7 +195,7 @@ class GrooScriptVertxTagLibSpec extends Specification {
 
         then:
         2 * resourceTaglib.script(_)
-        1 * resourceTaglib.require([module: 'grooscript'])
+        1 * resourceTaglib.require([module: 'grooscriptGrails'])
         1 * resourceTaglib.require([module: 'vertx'])
         0 * _
     }

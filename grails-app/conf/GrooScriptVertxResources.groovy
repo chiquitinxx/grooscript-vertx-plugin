@@ -17,10 +17,12 @@ modules = {
         resource url:'/js/domainClasses.js'
     }
     grooscriptGrails {
+        dependsOn 'grooscript'
         resource url:'/js/Builder.js'
+        resource url:'/js/GrooscriptGrails.js'
     }
     clientEvents {
-        dependsOn 'grooscript'
+        dependsOn 'grooscriptGrails'
         resource url:'/js/ClientEventHandler.js'
     }
 }

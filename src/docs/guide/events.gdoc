@@ -1,13 +1,40 @@
-This is an example documentation template. The syntax format is similar to "Textile":http://textile.thresholdstate.com/.
+There are two event engines that can be running in your page. Vert.x and internal event listener. Vert.x is used for
+communicate with the server, and the internal is used with templates or the model. You can listen events trigger, or
+launch the events. Both, Vert.x and client event has same methods:
 
-You can apply formatting such as *bold*, _italic_ and @code@. Bullets are possible too:
+{code}
+void sendMessage(String channel, Map data)
+void onEvent(String channel, Closure action)
+{code}
 
-* Bullet 1
-* Bullet 2
+You can listen an event trigger with onEvent, on a channel. Closure receives a map with the data of the message.
 
-As well as numbered lists:
+You can launch an event on a channel with sendMessage.
 
-# Number 1
-# Number 2
+h2. Vert.x Events, between server and pages.
 
-The documentation also handles links to [guide items|guide:introduction] as well as [reference|items]
+You have bean @eventBus@ available in your grails artifacts
+
+{code}
+eventBus.onEvent('myChannel', { msg -> println "Message incoming: $msg"})
+
+eventBus.sendMessage('myChannel', [message: 'hello world!'])
+{code}
+
+In your gsp's, you have js variable @grooscriptEventBus@, but better use tags. You can listen on messages from the
+server, or when Vert.x client connection is done.
+
+{code}
+<grooscript:onVertxStarted>
+    console.log 'Started!'
+</grooscript:onVertxStarted>
+<grooscript:onServerEvent name="testingIncoming">
+    $('p').text('New message! ' + message)
+</grooscript:onServerEvent>
+{code}
+
+You can launch events, in your groovy or js code, with:
+{code}
+{code}
+
+h2. Client events, in your pages only.

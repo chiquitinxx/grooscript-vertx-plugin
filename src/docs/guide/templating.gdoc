@@ -1,5 +1,5 @@
 You can create templates using [template|tags] tag. A template is a piece of groovy code that will be
-executed inside a html builder. For example:
+executed inside a html builder. The template is rendered on the client, not in server. For example:
 
 {code}
 ul {
@@ -14,7 +14,3 @@ You can put templates in separates files if you want to.
 You can define a jQuery selector with the elements that will be updated each time template renders.
 You can execute the template at start or when you want.
 The template can listen events to renders again.
-
-There are two event engines that can be running in your page. Vert.x and internal event listener. Vert.x is used for
-communicate with the server, and the internal is used with templates or the model. You can listen events trigger, or
-launch the events. You can redraw a template when any data changes, or something comes from the server, ...

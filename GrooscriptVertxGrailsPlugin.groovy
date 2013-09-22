@@ -213,11 +213,15 @@ Also use Vert.x to use events between server and gsps.
         initGrooScriptDaemon(application)
         if (applicationContext.eventBus && application.config.vertx?.testing) {
             applicationContext.eventBus.onEvent('testing', { message ->
-                consoleMessage 'Testing message recieved body: ' + message.body
-                message.reply([info: 'recieved'])
-                applicationContext.eventBus.sendMessage(
-                        org.grooscript.grails.plugin.VertxEventBus.CHANNEL_RELOAD, [name: 'reloadChannel'])
-                applicationContext.eventBus.sendMessage('testingIncoming', [name: 'testingIncomingChannel'])
+                if (message) {
+                    consoleMessage 'Testing message recieved body: ' + message.body
+                    message.reply([info: 'recieved'])
+                    applicationContext.eventBus.sendMessage(
+                            org.grooscript.grails.plugin.VertxEventBus.CHANNEL_RELOAD, [name: 'reloadChannel'])
+                    applicationContext.eventBus.sendMessage('testingIncoming', [name: 'testingIncomingChannel'])
+                } else {
+                    consoleMessage 'Empty message received.'
+                }
             })
         }
     }

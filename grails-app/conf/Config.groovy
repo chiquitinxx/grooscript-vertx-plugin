@@ -61,15 +61,17 @@ grails.resources.modules = {
     grooscript {
         resource url:'/js/grooscript.js'
     }
-    grooscriptGrails {
-        resource url:'/js/Builder.js'
-    }
     domainClasses {
         dependsOn 'grooscript'
         resource url:'/js/domainClasses.js'
     }
-    clientEvents {
+    grooscriptGrails {
         dependsOn 'grooscript'
+        resource url:'/js/Builder.js'
+        resource url:'/js/GrooscriptGrails.js'
+    }
+    clientEvents {
+        dependsOn 'grooscriptGrails'
         resource url:'/js/ClientEventHandler.js'
     }
 }

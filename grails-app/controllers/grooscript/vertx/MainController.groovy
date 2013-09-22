@@ -2,6 +2,9 @@ package grooscript.vertx
 
 class MainController {
 
+    def grooscriptConverter
+    def eventBus
+
     def index() { }
 
     def test() { }

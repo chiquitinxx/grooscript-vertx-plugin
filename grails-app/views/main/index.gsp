@@ -43,7 +43,9 @@
 <grooscript:reloadPage/>
 
 <grooscript:onServerEvent name='testingIncoming'>
-    console.log 'Got message in testingIncoming!' + JSON.stringify(message)
+    console.log 'Got message in testingIncoming to json!' + JSON.stringify(message)
+    console.log 'Got message in testingIncoming coming!' + message.toString()
+    console.log 'Got js!' + GrooscriptGrails.toJavascript(message)
     $('#gotIncoming').text($('#gotIncoming').text() + '.')
 </grooscript:onServerEvent>
 <grooscript:onServerEvent name='testingIncoming'>
@@ -64,6 +66,10 @@
                 }, 2000);*/
     }
 </r:script>
+
+<grooscript:onVertxStarted>
+    GrooscriptGrails.sendServerMessage('testing',[hola: 'hola', one: 1, list: [1,2], map: [three : 3, four: 'four']])
+</grooscript:onVertxStarted>
 
 <button type="button" onclick="sendTestingMessage();">Send Testing Message</button>
 

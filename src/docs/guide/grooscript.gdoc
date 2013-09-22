@@ -1,10 +1,20 @@
 This little framework is the engine of the plugin. It converts Groovy code to javascript.
 You don't need to know GrooScript, the plugin do the work for you. But you can
 take a look to the "site":http://grooscript.org/ to get more info.
-grooscript.jar comes with the plugin, you can use to convert any Groovy code to javascript.
-
-{code}
-String jsResult = GrooScript.convert("5.times { println 'Hello! - ${it}' }")
-{code}
 
 Just remember you need *grooscript.js* to run it, in js dir, or _grooscript_ resources module.
+
+Also, there is grooscriptConverter bean, that you can inject in your grails artifacts:
+
+{code}
+class MyController {
+
+    def grooscriptConverter
+
+    def index() {
+        def jsCode = grooscriptConverter.toJavascript('any groovy code')
+    }
+}
+{code}
+
+All conversion done with bean or tags, use classPath 'src/groovy' by default.

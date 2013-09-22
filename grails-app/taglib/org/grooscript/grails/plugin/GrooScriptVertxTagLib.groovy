@@ -254,11 +254,11 @@ class GrooScriptVertxTagLib {
             String name = attrs.name
             if (name) {
                 initVertx()
-                r.require(module: 'grooscript')
+                r.require(module: 'grooscriptGrails')
 
                 r.script() {
                     def script = body()
-                    String jsCode = grooscriptConverter.toJavascript("{ message -> ${script}}").trim()
+                    String jsCode = grooscriptConverter.toJavascript("{ message -> message = GrooscriptGrails.toGroovy(message);${script}}").trim()
                     jsCode = removeLastSemicolon(jsCode)
 
                     out << "\nfunction ${nextVertxOnLoadFunctionName}() {\n    ${EVENTBUS_JS_NAME}"+
@@ -278,7 +278,7 @@ class GrooScriptVertxTagLib {
         if (applicationContext.containsBean(VERTX_EVENTBUS_BEAN)) {
 
             initVertx()
-            r.require(module: 'grooscript')
+            r.require(module: 'grooscriptGrails')
 
             r.script() {
                 def script = body()
@@ -293,6 +293,10 @@ class GrooScriptVertxTagLib {
     }
 
     private removeLastSemicolon(String code) {
-        code.substring(0, code.lastIndexOf(';'))
+        if (code.lastIndexOf(';') >= 0) {
+            return code.substring(0, code.lastIndexOf(';'))
+        } else {
+            return code
+        }
     }
 }

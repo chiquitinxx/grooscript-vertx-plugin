@@ -43,4 +43,4 @@ If detects any change, then send an event to eventbus, and you can automatically
 Is very useful when you changing styles or test any javascript code in you browser.
 
 You can use Vert.x client alone in your pages using [initVertx|tags] tag. Then you will have a javascript
-variable called @grooscriptEventBus@ with the Vert.x js eventBus,
+variable called @grooscriptEventBus@ with the Vert.x js eventBus.

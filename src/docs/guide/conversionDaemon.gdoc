@@ -11,9 +11,7 @@ grooscript {
         //A folder where .js files will be saved
         destination = 'web-app/js'
         //Optional conversion options
-        options = [customization, {
-            ast(TypeChecked)
-        }]
+        options = ['classPath', '../otherGroovysrc']
         //Optional do after each iteration
         doAfter = { list ->
             if (list) {
@@ -24,8 +22,8 @@ grooscript {
 }
 {code}
 
-By default, if not @options@ or not @options.classpath@, 'src/groovy' is added to the classpath used in conversions.
-You can change this classpath option with other folders or jars, depends of the code you want to convert.
+By default 'src/groovy' is added to the _classPath_ in conversions.
+You can add to _classPath_ option with other folders or jars, depends of the code you want to convert.
 The javascript files have the same name that your .groovy file, but with .js extension.
 The source list is done recursively, but no folders will be created in your destination folder,
 all files will be placed there.

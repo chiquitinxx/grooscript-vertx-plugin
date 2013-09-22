@@ -39,19 +39,8 @@ class PhantomJsTests extends GroovyTestCase {
         assert $("#template3").html() == '','3->' +$ ("#template3").html() + '<'
     }
 
-    /* TODO waiting for waitFor
-    @PhantomJsTest(url='http://localhost:8080/grooscript-vertx/main/vertxEvents')
-    void testVertxEvents() {
-
-        def waitTime = { milis ->
-            def start = new Date().time
-            while ((new Date().getTime() - start) < milis) {}
-        }
-
-        console.log 'Waiting...'
-        waitTime(3000)
-
-        assert $("#points").html() == '.', 'Correct text 2 is >' + $("#points").text() +'<'
-        println 'Finish!.'
-    }*/
+    @PhantomJsTest(url = 'http://localhost:8080/grooscript-vertx/main/vertxEvents', waitSeconds = 2)
+    void testWaitSeconds() {
+        assert $('#points').html() == '.',"points Html after is ${$('#points').html()}"
+    }
 }
