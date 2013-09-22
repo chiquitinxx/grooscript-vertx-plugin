@@ -1,6 +1,5 @@
 package org.grooscript.grails.plugin
 
-import groovy.transform.TypeChecked
 import org.grooscript.GrooScript
 import static org.grooscript.grails.util.Util.*
 
@@ -15,6 +14,7 @@ class GrooScriptVertxTagLib {
     static namespace = 'grooscript'
 
     def grailsApplication
+    def grooscriptConverter
 
     def getNextVertxOnLoadEvent() {
         def value = request.getAttribute(REQUEST_VERTX_NEXT_ONLOAD)
@@ -99,20 +99,11 @@ class GrooScriptVertxTagLib {
         }
         if (script) {
             r.require(module: 'grooscript')
-            try {
-                GrooScript.clearAllOptions()
-                def result = GrooScript.convert(script)
-                r.script() {
-                    out << cleanUpConvertedCode(result)
-                }
-            } catch (e) {
-                log.error "GrooScriptVertxTagLib.code error converting: ${e.message}", e
+            def jsCode = grooscriptConverter.toJavascript(script)
+            r.script() {
+                out << jsCode
             }
         }
-    }
-
-    private cleanUpConvertedCode(String jsCode) {
-        jsCode.replaceAll(/this\./,'')
     }
 
     /**
@@ -137,8 +128,7 @@ class GrooScriptVertxTagLib {
         }
         if (script) {
             def functionName = attrs.functionName ?: 'fTemplate'+new Date().time.toString()
-            GrooScript.clearAllOptions()
-            String result = GrooScript.convert("Builder.process { -> ${script}}").trim()
+            String jsCode = grooscriptConverter.toJavascript("Builder.process { -> ${script}}").trim()
 
             r.require(module: 'grooscript')
             r.require(module: 'kimbo')
@@ -152,7 +142,7 @@ class GrooScriptVertxTagLib {
 
             r.script() {
                 out << "\nfunction ${functionName}() {\n"
-                out << "  var code = ${cleanUpConvertedCode(result)};\n"
+                out << "  var code = ${jsCode};\n"
                 out << "  \$('" + (attrs.itemSelector ? attrs.itemSelector : "#${functionName}") + "').html(code.html);\n"
                 out << '};\n'
                 if (!attrs.renderOnReady) {
@@ -205,7 +195,7 @@ class GrooScriptVertxTagLib {
             GrooScript.setConversionProperty('customization', {
                 ast(org.grooscript.asts.DomainClass)
             })
-            GrooScript.setOwnClassPath(['src/groovy'])
+            GrooScript.setConversionProperty('classPath',['src/groovy'])
             File domainFile = getDomainFile(domainClass)
             if (domainFile) {
                 try {
@@ -243,11 +233,10 @@ class GrooScriptVertxTagLib {
 
             r.script() {
                 def script = body()
-                GrooScript.clearAllOptions()
-                def result = GrooScript.convert("{ message -> ${script}}").trim()
-                result = removeLastSemicolon(result)
+                def jsCode = grooscriptConverter.toJavascript("{ message -> ${script}}").trim()
+                jsCode = removeLastSemicolon(jsCode)
 
-                out << "\ngrooscriptEvents.onEvent('${name}', ${cleanUpConvertedCode(result)});\n"
+                out << "\ngrooscriptEvents.onEvent('${name}', ${jsCode});\n"
             }
         } else {
             consoleError 'GrooScriptVertxTagLib onEvent need define name property'
@@ -269,12 +258,11 @@ class GrooScriptVertxTagLib {
 
                 r.script() {
                     def script = body()
-                    GrooScript.clearAllOptions()
-                    String result = GrooScript.convert("{ message -> ${script}}").trim()
-                    result = removeLastSemicolon(result)
+                    String jsCode = grooscriptConverter.toJavascript("{ message -> ${script}}").trim()
+                    jsCode = removeLastSemicolon(jsCode)
 
                     out << "\nfunction ${nextVertxOnLoadFunctionName}() {\n    ${EVENTBUS_JS_NAME}"+
-                            ".registerHandler('${name}', ${cleanUpConvertedCode(result)})};\n"
+                            ".registerHandler('${name}', ${jsCode})};\n"
                 }
             } else {
                 consoleError 'GrooScriptVertxTagLib onServerEvent need define name property'
@@ -294,12 +282,11 @@ class GrooScriptVertxTagLib {
 
             r.script() {
                 def script = body()
-                GrooScript.clearAllOptions()
-                String result = GrooScript.convert("{ -> ${script}}").trim()
-                result = removeLastSemicolon(result)
-                result = result.replaceFirst(/function\(it\)/,"function ${nextVertxOnLoadFunctionName}()")
+                String jsCode = grooscriptConverter.toJavascript("{ -> ${script}}").trim()
+                jsCode = removeLastSemicolon(jsCode)
+                jsCode = jsCode.replaceFirst(/function\(it\)/,"function ${nextVertxOnLoadFunctionName}()")
 
-                out << "\n${cleanUpConvertedCode(result)};\n"
+                out << "\n${jsCode};\n"
             }
 
         }

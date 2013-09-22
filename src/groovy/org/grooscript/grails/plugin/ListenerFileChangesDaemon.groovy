@@ -37,11 +37,11 @@ class ListenerFileChangesDaemon {
                     sleep(REST_TIME)
                 }
             }.then( {
-                consoleMessage 'Listener File Changes Terminated.'
+                consoleMessage 'Listener File Changes Terminated. ' + (nameListener ? nameListener : '')
             }, { e ->
                 consoleError 'Listener ended by uncontrolled error: ' + e.message
             })
-            consoleMessage 'Listener File Changes Started.' + (nameListener ? nameListener : '')
+            consoleMessage 'Listener File Changes Started. ' + (nameListener ? nameListener : '')
         } else {
             consoleError 'Listener File Changes needs sourceList to run.'
         }
@@ -51,6 +51,7 @@ class ListenerFileChangesDaemon {
         if (actualTask) {
             continueTask = false
             actualTask.join()
+            actualTask = null
         }
     }
 

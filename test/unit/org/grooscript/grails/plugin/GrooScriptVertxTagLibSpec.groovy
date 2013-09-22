@@ -4,7 +4,6 @@ import grails.test.mixin.TestFor
 import grails.test.mixin.TestMixin
 import grails.test.mixin.support.GrailsUnitTestMixin
 import org.grails.plugin.resource.ResourceTagLib
-import org.grooscript.GrooScript
 import spock.lang.Specification
 
 /**
@@ -16,10 +15,13 @@ import spock.lang.Specification
 class GrooScriptVertxTagLibSpec extends Specification {
 
     def resourceTaglib
+    def grooscriptConverter
 
     void setup() {
         resourceTaglib = Mock(ResourceTagLib)
+        grooscriptConverter = Mock(GrooscriptConverter)
         GrooScriptVertxTagLib.metaClass.r = resourceTaglib
+        GrooScriptVertxTagLib.metaClass.grooscriptConverter = grooscriptConverter
     }
 
     void cleanup() {
@@ -33,31 +35,25 @@ class GrooScriptVertxTagLibSpec extends Specification {
     static final CODE = 'code example'
 
     void 'test code taglib'() {
-        given: 'mock grooscript'
-        GroovySpy(GrooScript, global: true)
-
         when: 'applying grooscript code taglib'
         applyTemplate("<grooscript:code>${CODE}</grooscript:code>")
 
         then: 'call convert and script'
         1 * resourceTaglib.script(_)
         1 * resourceTaglib.require([module: 'grooscript'])
-        1 * GrooScript.convert(CODE)
+        1 * grooscriptConverter.toJavascript(_)
     }
 
     static final FILE_PATH = 'src/groovy/org/grooscript/grails/util/Builder.groovy'
 
     void 'test code taglib with a file'() {
-        given:
-        GroovySpy(GrooScript, global: true)
-
         when:
         applyTemplate("<grooscript:code filePath='${FILE_PATH}'/>")
 
         then:
         1 * resourceTaglib.script(_)
         1 * resourceTaglib.require([module: 'grooscript'])
-        1 * GrooScript.convert(new File(FILE_PATH).text)
+        1 * grooscriptConverter.toJavascript(new File(FILE_PATH).text)
     }
 
     void 'test init vertx variable'() {
@@ -86,9 +82,6 @@ class GrooScriptVertxTagLibSpec extends Specification {
     }
 
     void 'test template'() {
-        given:
-        GroovySpy(GrooScript, global: true)
-
         when:
         def result = applyTemplate("<grooscript:template>assert true</grooscript:template>")
 
@@ -97,7 +90,8 @@ class GrooScriptVertxTagLibSpec extends Specification {
         1 * resourceTaglib.require([module: 'kimbo'])
         1 * resourceTaglib.require([module: 'grooscript'])
         1 * resourceTaglib.require([module: 'grooscriptGrails'])
-        1 * GrooScript.convert('Builder.process { -> assert true}')
+        1 * grooscriptConverter.toJavascript('Builder.process { -> assert true}') >> ''
+        0 * _
         result.startsWith "\n<div id='fTemplate"
     }
 
@@ -108,21 +102,23 @@ class GrooScriptVertxTagLibSpec extends Specification {
 
         then:
         1 * resourceTaglib.script(_)
+        1 * grooscriptConverter.toJavascript(_) >> ''
+        3 * resourceTaglib.require(_)
+        0 * _
         !result
     }
 
     static final FILE_PATH_TEMPLATE = 'src/groovy/MyTemplate.groovy'
 
     void 'test template with a file'() {
-        given:
-        GroovySpy(GrooScript, global: true)
-
         when:
         def result = applyTemplate("<grooscript:template filePath='${FILE_PATH_TEMPLATE}'/>")
 
         then:
         1 * resourceTaglib.script(_)
-        1 * GrooScript.convert("Builder.process { -> ${new File(FILE_PATH_TEMPLATE).text}}")
+        1 * grooscriptConverter.toJavascript("Builder.process { -> ${new File(FILE_PATH_TEMPLATE).text}}") >> ''
+        3 * resourceTaglib.require(_)
+        0 * _
         result.startsWith "\n<div id='fTemplate"
     }
 
@@ -133,7 +129,10 @@ class GrooScriptVertxTagLibSpec extends Specification {
 
         then:
         2 * resourceTaglib.script(_)
+        3 * resourceTaglib.require(_)
+        1 * grooscriptConverter.toJavascript(_) >> ''
         1 * resourceTaglib.require([module: 'clientEvents'])
+        0 * _
     }
 
     static final FAKE_NAME = 'FAKE'

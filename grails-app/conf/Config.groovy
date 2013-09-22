@@ -7,7 +7,7 @@ log4j = {
     //}
 
     error 'org.vertx'
-    info 'org.grails.plugin.grooscript-vertx'
+    error 'org.grails.plugin.grooscript-vertx'
 
     error  'org.codehaus.groovy.grails.web.servlet',  //  controllers
            'org.codehaus.groovy.grails.web.pages', //  GSP

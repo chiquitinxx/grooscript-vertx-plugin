@@ -11,17 +11,15 @@ class Util {
     static final String GROOVY_DIR = "src${SEP}groovy"
     static final String DOMAIN_DIR = "grails-app${SEP}domain"
     static final String DOMAIN_JS_DIR = "web-app${SEP}js${SEP}domain"
-    static final String DOMAIN_JS_EXTERNAL = "${SEP}js${SEP}domain"
     static final String DOMAIN_CLASSES_JS_FILE = "web-app${SEP}js${SEP}domainClasses.js"
 
     static final PLUGIN_MESSAGE = '[GrooScript Vertx Plugin]'
 
     static consoleMessage(message) {
-        println "\n${PLUGIN_MESSAGE} $message"
+        println "${PLUGIN_MESSAGE} $message"
     }
 
     static consoleError(message) {
-        println "\n\u001B[91m${PLUGIN_MESSAGE} [ERROR] $message\u001B[0m"
+        println "\u001B[91m${PLUGIN_MESSAGE} [ERROR] $message\u001B[0m"
     }
-
 }

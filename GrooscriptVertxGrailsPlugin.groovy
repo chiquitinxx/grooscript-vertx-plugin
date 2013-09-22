@@ -1,5 +1,5 @@
+import org.grooscript.grails.plugin.GrooscriptConverter
 import org.grooscript.grails.plugin.ListenerFileChangesDaemon
-import org.grooscript.grails.plugin.VertxEventBus
 import org.grooscript.GrooScript
 import grails.util.Environment
 
@@ -52,20 +52,36 @@ Also use Vert.x to use events between server and gsps.
     def doWithWebDescriptor = { xml ->
     }
 
+    static final GROOVY_VERSION_MODEL_REQUIRED = '2.1.0'
+    static final JAVA_VERSION_VERTX_REQUIRED = '1.7'
+
+
     def doWithSpring = {
 
         def port = application.config.vertx?.eventBus?.port
 
         if (port) {
-            def host = application.config.vertx?.eventBus?.host
-            if (!host) {
-                host = 'localhost'
-            }
 
-            eventBus(VertxEventBus, port, host,
-                    application.config.vertx?.eventBus?.inboundPermitted?:[],
-                    application.config.vertx?.eventBus?.outboundPermitted?:[],
-                    application.config.vertx?.testing ? true : false)
+            def javaVersion = Class.forName('java.lang.String').package.implementationVersion
+            if (javaVersion >= JAVA_VERSION_VERTX_REQUIRED) {
+                def host = application.config.vertx?.eventBus?.host
+                if (!host) {
+                    host = 'localhost'
+                }
+
+                eventBus(org.grooscript.grails.plugin.VertxEventBus, port, host,
+                        application.config.vertx?.eventBus?.inboundPermitted?:[],
+                        application.config.vertx?.eventBus?.outboundPermitted?:[],
+                        application.config.vertx?.testing ? true : false)
+            } else {
+                consoleError 'You need at least Java 1.7 to run Vert.x'
+            }
+        }
+
+        def groovyVersion = Class.forName('groovy.lang.GString').package.implementationVersion
+
+        grooscriptConverter(GrooscriptConverter) {
+            canConvertModel = (groovyVersion >= GROOVY_VERSION_MODEL_REQUIRED)
         }
     }
 
@@ -75,7 +91,7 @@ Also use Vert.x to use events between server and gsps.
 
             def doAfter = { list ->
                 if (list.size() > 0) {
-                    sendReloadNotificationIfNeeded()
+                    sendReloadNotificationIfNeeded(application)
                 }
             }
 
@@ -87,13 +103,7 @@ Also use Vert.x to use events between server and gsps.
             def doAfterOption = application.config.grooscript?.daemon?.doAfter
 
             //By default
-            if (!options) {
-                options = [classpath:'src/groovy']
-            } else {
-                if (!options.classpath) {
-                    options.classpath = 'src/groovy'
-                }
-            }
+            options = application.mainContext.grooscriptConverter.addGroovySourceClassPathIfNeeded(options)
 
             //Start the daemon if source and destination are ok
             if (source && destination) {
@@ -115,30 +125,27 @@ Also use Vert.x to use events between server and gsps.
         }
     }
 
-    private sendReloadNotificationIfNeeded() {
-        if (applicationContext.eventBus) {
-            applicationContext.grailsResourceProcessor.reloadAll()
-            applicationContext.eventBus.sendMessage(
-                    VertxEventBus.CHANNEL_RELOAD,[reload:true])
+    private sendReloadNotificationIfNeeded(application) {
+        if (application.mainContext.eventBus) {
+            application.mainContext.grailsResourceProcessor.reloadAll()
+            application.mainContext.eventBus.sendMessage(
+                org.grooscript.grails.plugin.VertxEventBus.CHANNEL_RELOAD,[reload:true])
         }
     }
-
-    static final GROOVY_VERSION_REQUIRED = '2.1.0'
 
     private launchFileChangesListeners(application, doAfter) {
 
         if (Environment.current == Environment.DEVELOPMENT) {
-            launchConfigFileChangesListener(application, doAfter)
-            def groovyVersion = Class.forName('groovy.lang.GString').package.implementationVersion
-            if (groovyVersion >= GROOVY_VERSION_REQUIRED) {
-                launchDomainFileChangesListener(application)
+            launchFileChangesListener(application, doAfter)
+            if (application.mainContext.grooscriptConverter.canConvertModel) {
+                //launchDomainFileChangesListener(application)
             } else {
-                consoleError "You need at least Groovy ${GROOVY_VERSION_REQUIRED} to work with the model."
+                consoleError "You need at least Groovy ${GROOVY_VERSION_MODEL_REQUIRED} to work with the model."
             }
         }
     }
 
-    private launchConfigFileChangesListener(application, doAfter) {
+    private launchFileChangesListener(application, doAfter) {
 
         def afterChanges = application.config.vertx?.listener?.afterChanges
         def listenerSource = application.config.vertx?.listener?.source
@@ -154,6 +161,9 @@ Also use Vert.x to use events between server and gsps.
                 doAfter(list)
             }
             listener.start()
+            if (application.mainContext.eventBus) {
+                application.mainContext.eventBus.fileChangesListener = listener
+            }
         }
     }
 
@@ -178,7 +188,7 @@ Also use Vert.x to use events between server and gsps.
                             GrooScript.setConversionProperty('customization', {
                                 ast(org.grooscript.asts.DomainClass)
                             })
-                            GrooScript.setOwnClassPath([GROOVY_DIR, DOMAIN_DIR])
+                            GrooScript.setConversionProperty('classPath',[GROOVY_DIR, DOMAIN_DIR])
                             try {
                                 GrooScript.convert(absolutePath, DOMAIN_JS_DIR)
                                 consoleMessage("Converted domain class: $absolutePath")
@@ -194,17 +204,19 @@ Also use Vert.x to use events between server and gsps.
                     }
                 }
                 listener.start()
+                application.mainContext.grooscriptConverter.modelChangesListener = listener
             }
         }
     }
 
     def doWithApplicationContext = { applicationContext ->
         initGrooScriptDaemon(application)
-        if (application.config.vertx?.testing) {
+        if (applicationContext.eventBus && application.config.vertx?.testing) {
             applicationContext.eventBus.onEvent('testing', { message ->
                 consoleMessage 'Testing message recieved body: ' + message.body
                 message.reply([info: 'recieved'])
-                applicationContext.eventBus.sendMessage(VertxEventBus.CHANNEL_RELOAD, [name: 'reloadChannel'])
+                applicationContext.eventBus.sendMessage(
+                        org.grooscript.grails.plugin.VertxEventBus.CHANNEL_RELOAD, [name: 'reloadChannel'])
                 applicationContext.eventBus.sendMessage('testingIncoming', [name: 'testingIncomingChannel'])
             })
         }
@@ -214,14 +226,20 @@ Also use Vert.x to use events between server and gsps.
     def onChange = { event ->
     }*/
 
+
     def onConfigChange = { event ->
         GrooScript.stopConversionDaemon()
+        applicationContext.grooscriptConverter.stopListeners()
+        if (applicationContext.eventBus) {
+            applicationContext.eventBus.stopListeners()
+        }
         initGrooScriptDaemon(application)
     }
 
     def onShutdown = { event ->
 
         GrooScript.stopConversionDaemon()
+        application.grooscriptConverter.stopListeners()
 
         if (applicationContext.eventBus) {
             consoleMessage 'Closing Vert.x ...'

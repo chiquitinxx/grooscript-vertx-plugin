@@ -25,6 +25,13 @@ class VertxEventBus implements EventHandler {
     Map listeners = [:]
     def host
     def port
+    ListenerFileChangesDaemon fileChangesListener
+
+    def stopListeners() {
+        if (fileChangesListener) {
+            fileChangesListener.stop()
+        }
+    }
 
     VertxEventBus (int port, String host, inboundPermitted = [], outboundPermitted = [], testing = false) {
 
@@ -103,6 +110,7 @@ class VertxEventBus implements EventHandler {
             }
         })
         closed.val == true
+        stopListeners()
         consoleMessage 'Closed Vertx EventBus.'
     }
 }
