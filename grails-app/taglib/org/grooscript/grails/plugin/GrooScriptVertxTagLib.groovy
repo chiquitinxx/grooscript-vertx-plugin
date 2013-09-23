@@ -86,11 +86,18 @@ class GrooScriptVertxTagLib {
         }
     }
 
+    /**
+     * grooscript:code
+     * filePath - optional - path to the file to be converted from project dir
+     */
     def code = { attrs, body ->
         def script
         if (attrs.filePath) {
             try {
                 script = new File(attrs.filePath).text
+                if (body()) {
+                    script += '\n' + body()
+                }
             } catch (e) {
                 log.error "GrooScriptVertxTagLib.code error reading file('${attrs.filePath}'): ${e.message}", e
             }

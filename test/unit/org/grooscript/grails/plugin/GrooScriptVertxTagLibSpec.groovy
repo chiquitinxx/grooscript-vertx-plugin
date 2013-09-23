@@ -56,6 +56,16 @@ class GrooScriptVertxTagLibSpec extends Specification {
         1 * grooscriptConverter.toJavascript(new File(FILE_PATH).text)
     }
 
+    void 'test code taglib with a file and body'() {
+        when:
+        applyTemplate("<grooscript:code filePath='${FILE_PATH}'>${CODE}</grooscript:code>")
+
+        then:
+        1 * resourceTaglib.script(_)
+        1 * resourceTaglib.require([module: 'grooscript'])
+        1 * grooscriptConverter.toJavascript(new File(FILE_PATH).text+'\n'+CODE)
+    }
+
     void 'test init vertx variable'() {
         given:
         initVertx()
