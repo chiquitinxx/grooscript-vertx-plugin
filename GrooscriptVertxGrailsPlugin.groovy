@@ -7,7 +7,7 @@ import static org.grooscript.grails.util.Util.*
 
 class GrooscriptVertxGrailsPlugin {
     // the plugin version
-    def version = "0.3-SNAPSHOT"
+    def version = "0.3"
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "2.2 > *"
     // resources that are excluded from plugin packaging
@@ -27,7 +27,7 @@ class GrooscriptVertxGrailsPlugin {
     ]
 
     def title = "Grooscript Vertx Plugin"
-    def author = "Jorge Franco Leza"
+    def author = "Jorge Franco"
     def authorEmail = "grooscript@gmail.com"
     def description = '''\
 Use your groovy code in your gsps thanks to GrooScript.

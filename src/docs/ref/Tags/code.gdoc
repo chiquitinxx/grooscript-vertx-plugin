@@ -3,7 +3,13 @@ h1. code
 Converts groovy code to javascript and put in the page inside <r:script>. grooscript resources module added too.
 
 {code}
-<grooscript:code filePath='src/groovy/your/packet/File.groovy'>
+<grooscript:code filePath='src/groovy/your/packet/Item.groovy'/>
+{code}
+
+{code}
+<grooscript:code filePath='src/groovy/your/packet/Item.groovy'>
+    def item = new Item();
+</grooscript:code>
 {code}
 
 {code}

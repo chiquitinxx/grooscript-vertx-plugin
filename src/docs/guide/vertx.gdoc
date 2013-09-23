@@ -6,7 +6,7 @@ vertx {
     eventBus {
         port = 8085
         //host = 'localhost'
-        //inboundPermitted = [["address": 'myChannel']}
+        //inboundPermitted = [["address": 'myChannel']]
         //outboundPermitted
     }
     listener {

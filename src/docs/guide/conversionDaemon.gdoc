@@ -1,6 +1,6 @@
 You can activate a daemon that detect changes in groovy files and automatically convert the code to javascript.
 This daemon only works in development, and is all time running while you run your grails application.
-The first time it runs convert all the files, next iterations convert changed files, more or less each second.
+The first time it runs, convert all the files; and next iterations convert changed files, more or less each second.
 If you want to use daemon, need setup in Config.groovy:
 
 {code}
@@ -28,11 +28,11 @@ The javascript files have the same name that your .groovy file, but with .js ext
 The source list is done recursively, but no folders will be created in your destination folder,
 all files will be placed there.
 
-If Vert.x is running, when a conversion with this daemon is done, then reloadPage event sent. In this
+If Vert.x is running, when daemon does a conversion, then reloadPage event sent. In this
 "video":https://vimeo.com/59395085 there is a demo of this feature without grails.
 
 You can use this daemon to generate javascript files that you will use in your pages. Remember that you need
-grooscript.js to run your converted code, can use resources plugin in your Config.groovy:
+@grooscript.js@ to run your converted code, can use resources plugin in your Config.groovy:
 
 {code}
     grails.resources.modules = {

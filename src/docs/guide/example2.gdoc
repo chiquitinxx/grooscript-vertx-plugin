@@ -1,0 +1,60 @@
+How to create a chat with the plugin, without any javascript line of code :)
+
+In Config.groovy:
+{code}
+vertx {
+    eventBus {
+        port = 8085
+        //host = 'localhost'
+        inboundPermitted = [["address": 'myMessage']]
+        outboundPermitted = [["address": 'chat']]
+    }
+}
+{code}
+
+In BootStrap.groovy
+{code}
+    def eventBus
+
+    def init = { servletContext ->
+        eventBus.onEvent('myMessage', { message ->
+                println 'Message received: ' + message.body
+                eventBus.sendMessage('chat', message.body)
+        })
+    }
+{code}
+
+In gsp, kimbo is like jQuery:
+{code}
+<html>
+<head>
+  <title>Chat</title>
+    <r:require module="kimbo"/>
+    <r:layoutResources/>
+</head>
+<body>
+<div class="myHead">
+    <p>Your name:</p><input type="text" id='name'/>
+    <p>Your message:</p><input type="text" id='message'/>
+    <button type="button" id='sendMessage' disabled="disabled" onclick="sendMessage()">Send message!</button>
+</div>
+<div class="messages" id='messages'>
+</div>
+<grooscript:code>
+    def sendMessage() {
+        def who = $('#name').val() ?: 'Unknown'
+        GrooscriptGrails.sendServerMessage('myMessage',[name: who, message: $('#message').val()])
+    }
+</grooscript:code>
+<grooscript:onVertxStarted>
+    $('#sendMessage').removeAttr("disabled")
+    console.log 'Vert.x up!'
+</grooscript:onVertxStarted>
+<grooscript:onServerEvent name="chat">
+    def html = '<p>'+ new Date().toString() +' - ' + message.name +' > ' + message.message + '</p>'
+    $('#messages').prepend(html)
+</grooscript:onServerEvent>
+<r:layoutResources/>
+</body>
+</html>
+{code}

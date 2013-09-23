@@ -2,15 +2,17 @@ You can create templates using [template|tags] tag. A template is a piece of gro
 executed inside a html builder. The template is rendered on the client, not in server. For example:
 
 {code}
-ul {
-    5.times { number ->
-        li "${number} li item"
+<grooscript:template>
+    ul {
+        5.times { number ->
+            li "${number} li item"
+        }
     }
-}
+</grooscript:template>
 {code}
 
 The template is executed in the client, not in the server.
 You can put templates in separates files if you want to.
 You can define a jQuery selector with the elements that will be updated each time template renders.
 You can execute the template at start or when you want.
-The template can listen events to renders again.
+The template can listen client events to renders again.

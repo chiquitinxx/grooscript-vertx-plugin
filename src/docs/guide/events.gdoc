@@ -35,6 +35,22 @@ server, or when Vert.x client connection is done.
 
 You can launch events, in your groovy or js code, with:
 {code}
+GrooscriptGrails.sendServerMessage('testing', message)
 {code}
 
 h2. Client events, in your pages only.
+
+When you listen to a client event, or a template is listening events, then client event is activated in the page.
+You can listen an event with:
+
+{code}
+<grooscript:onEvent name='nameEvent'>
+    console.log 'Message received:' + message
+</grooscript:onEvent>
+{code}
+
+And launch client events with:
+
+{code}
+GrooscriptGrails.sendClientMessage('nameEvent', message)
+{code}

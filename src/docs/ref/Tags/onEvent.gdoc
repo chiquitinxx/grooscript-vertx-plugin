@@ -1,0 +1,11 @@
+h1. onEvent
+
+Code that will runs when a client event in that channel triggers. @message@ is param available in the code.
+
+{code}
+<grooscript:onEvent name='nameChannel'>
+    console.log 'Message: ' + message
+</grooscript:onEvent>
+{code}
+
+@name@ - required - name of the channel where listening.

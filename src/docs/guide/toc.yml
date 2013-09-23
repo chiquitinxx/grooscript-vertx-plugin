@@ -7,3 +7,5 @@ events: Events
 templating: Create templates
 domainClasses: Use your domain classes
 testing: PhantomJs tests
+example1: Example using template and local events
+example2: Example using vert.x to make a chat

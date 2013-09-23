@@ -19,7 +19,7 @@ function gSassert(value) {
 //Where all output is stored
 var gSconsole = "";
 //If true and console is available, all output will go through console
-var gSconsoleOutput = false;
+var gSconsoleOutput = true;
 //If true and console is available, some methods will show info on console
 var gSconsoleInfo = false;
 

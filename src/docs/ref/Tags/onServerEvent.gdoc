@@ -1,0 +1,11 @@
+h1. onServerEvent
+
+Code that will runs when a Vert.x event in that channel triggers. @message@ is param available in the code.
+
+{code}
+<grooscript:onServerEvent name='nameChannel'>
+    console.log 'Message: ' + message
+</grooscript:onServerEvent>
+{code}
+
+@name@ - required - name of the channel where listening.

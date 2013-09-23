@@ -1,6 +1,7 @@
 This plugin helps you generate javascript code for your pages, in Groovy.
 Will speed up your developing, working with the tools you know, like Spock, Codenarc, Gradle,...
-Also use Vert.x for reloading pages and give you an event tool between server and browser.
+Also, use Vert.x for reloading pages and give you an event tool between server and browser.
+It has a little event module ready to work in your client.
 This plugin need resources plugin to run, use @<r:layoutResources/>@ in your gsps with grooscript tags.
 
 h2. Important
@@ -11,4 +12,4 @@ files not changing. Javascript code have to be inserted in the pages.
 h2. Requisites
 
 You need *Java 1.7+* to use Vert.x.
-You need Grails 2.3 to use GrooScript 'customization' conversion option
+You need Grails 2.3 to use GrooScript 'customization' conversion option.

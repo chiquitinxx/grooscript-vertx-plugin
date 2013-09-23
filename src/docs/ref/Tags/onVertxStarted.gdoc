@@ -1,0 +1,9 @@
+h1. onVertxStarted
+
+Code that will runs when Vert.x eventBus connect with the server.
+
+{code}
+<grooscript:onVertxStarted>
+    console.log 'Vert.x eventBus is up'
+</grooscript:onVertxStarted>
+{code}

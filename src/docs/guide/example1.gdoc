@@ -1,0 +1,38 @@
+Example using a template and local events. All executed in javascript, no calls to server.
+
+{code}
+<html>
+<head>
+  <title>Title</title>
+    <r:layoutResources/>
+</head>
+<body>
+
+    <p>Hello world!</p>
+    <button type="button" onclick="doAction()">Launch Event!</button>
+    <div id='items'></div>
+<grooscript:template listenEvents="['redraw']" renderOnReady="false" itemSelector="#items">
+    ul {
+        listItems.each { item ->
+            ul item
+        }
+    }
+</grooscript:template>
+<grooscript:code>
+    println 'Welcome to GrooScript!'
+
+    def doAction = {
+        GrooscriptGrails.sendClientMessage 'redraw', [hello: 'Grooscript']
+    }
+
+    def listItems = ['FirstItem']
+</grooscript:code>
+
+<grooscript:onEvent name="redraw">
+    console.log 'Redrawing....' + message.toString()
+    listItems << 'Number ' + listItems.size()
+</grooscript:onEvent>
+<r:layoutResources/>
+</body>
+</html>
+{code}

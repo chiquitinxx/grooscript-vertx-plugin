@@ -17,7 +17,7 @@ grails.project.dependency.resolution = {
         compile 'org.vert-x:vertx-lang-groovy:1.3.1.final'
         //compile 'org.grooscript:grooscript:0.3.1'
         compile 'org.codehaus.gpars:gpars:1.0.0'
-        compile 'grooscript:grooscript:0.3.2-SNAPSHOT'
+        compile 'org.grooscript:grooscript:0.3.2'
         test "org.spockframework:spock-grails-support:0.7-groovy-2.0"
         test "cglib:cglib:3.0"
     }
@@ -25,7 +25,7 @@ grails.project.dependency.resolution = {
     plugins {
         runtime ":resources:1.2.RC2"
 
-        build(":tomcat:$grailsVersion",
+        build(//":tomcat:$grailsVersion",
               ":release:2.2.1",
               ":rest-client-builder:1.0.3") {
             export = false
