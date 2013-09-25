@@ -12,4 +12,4 @@ If you need more information about GrooScript visit [grooscript.org](http://groo
 
 It uses resources plugin also, and some gpars dataflows.
 
-See plugin documentation for more information
+See plugin [documentation](http://grooscript.org/pluginManual) for more information
