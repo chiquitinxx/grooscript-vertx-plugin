@@ -15,23 +15,25 @@ grails.project.dependency.resolution = {
 
     dependencies {
         compile 'org.vert-x:vertx-lang-groovy:1.3.1.final'
-        //compile 'org.grooscript:grooscript:0.3.1'
         compile 'org.codehaus.gpars:gpars:1.0.0'
-        compile 'org.grooscript:grooscript:0.3.2'
+        compile ('org.grooscript:grooscript:0.3.2') {
+            exclude 'groovy'
+        }
         test "org.spockframework:spock-grails-support:0.7-groovy-2.0"
-        test "cglib:cglib:3.0"
+        //test "cglib:cglib:3.0"
     }
 
     plugins {
-        runtime ":resources:1.2.RC2"
+        runtime ":resources:1.2.1"
 
-        build(//":tomcat:$grailsVersion",
+        build(":tomcat:$grailsVersion",
               ":release:2.2.1",
               ":rest-client-builder:1.0.3") {
             export = false
         }
 
-        test ":resources:1.2.RC2"
+        //test ":resources:1.2.1"
+        compile ":cache:1.1.1"
 
         test(":spock:0.7") {
             exclude "spock-grails-support"

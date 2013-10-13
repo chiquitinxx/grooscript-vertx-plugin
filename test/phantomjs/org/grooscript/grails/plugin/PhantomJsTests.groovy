@@ -6,7 +6,7 @@ import org.grooscript.asts.PhantomJsTest
  * @author Jorge Franco
  * Date: 20/08/13
  */
-class PhantomJsTests extends GroovyTestCase {
+class PhantomJsTests extends PhantomJsCase {
 
     void setUp() {
     }

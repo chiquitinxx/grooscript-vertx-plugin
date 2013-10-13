@@ -7,7 +7,7 @@ import static org.grooscript.grails.util.Util.*
 
 class GrooscriptVertxGrailsPlugin {
     // the plugin version
-    def version = "0.3"
+    def version = "0.4-SNAPSHOT"
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "2.2 > *"
     // resources that are excluded from plugin packaging
@@ -36,7 +36,7 @@ Also use Vert.x to use events between server and gsps.
 '''
 
     // URL to the plugin's documentation
-    def documentation = "http://grails.org/plugin/grooscript-vertx"
+    def documentation = "http://grooscript.org/pluginManual"
 
     def license = "APACHE"
 
