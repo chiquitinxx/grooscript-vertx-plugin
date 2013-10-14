@@ -24,6 +24,8 @@ log4j = {
     warn   'org.mortbay.log'
 }
 
+grails.cache.enabled = false
+
 vertx {
     eventBus {
         port = 8086

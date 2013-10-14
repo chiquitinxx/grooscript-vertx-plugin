@@ -1,5 +1,6 @@
 package org.grooscript.grails.plugin
 
+import grails.plugin.cache.Cacheable
 import org.grooscript.GrooScript
 import static org.grooscript.grails.util.Util.*
 
@@ -19,7 +20,9 @@ class GrooscriptConverter {
         }
     }
 
+    @Cacheable('conversions')
     String toJavascript(String groovyCode, options = null, cleanJsCode = true) {
+        println '****************************** CONVERSION!'
         String jsCode = ''
         if (groovyCode) {
             GrooScript.clearAllOptions()

@@ -26,6 +26,9 @@ class GrooscriptVertxGrailsPlugin {
         "web-app/js/domain/**"
     ]
 
+    def dependsOn = [resources: "1.2.1 > *",
+            cache: "1.1.1 > *"]
+
     def title = "Grooscript Vertx Plugin"
     def author = "Jorge Franco"
     def authorEmail = "grooscript@gmail.com"
