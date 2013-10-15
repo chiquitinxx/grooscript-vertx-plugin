@@ -16,10 +16,14 @@ class Util {
     static final PLUGIN_MESSAGE = '[GrooScript Vertx Plugin]'
 
     static consoleMessage(message) {
-        println "${PLUGIN_MESSAGE} $message"
+        println "${PLUGIN_MESSAGE} [INFO] $message"
     }
 
     static consoleError(message) {
         println "\u001B[91m${PLUGIN_MESSAGE} [ERROR] $message\u001B[0m"
+    }
+
+    static consoleWarning(message) {
+        println "\u001B[93m${PLUGIN_MESSAGE} [WARNING] $message\u001B[0m"
     }
 }

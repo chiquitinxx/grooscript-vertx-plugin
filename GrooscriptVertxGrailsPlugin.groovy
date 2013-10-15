@@ -77,7 +77,7 @@ Also use Vert.x to use events between server and gsps.
                         application.config.vertx?.eventBus?.outboundPermitted?:[],
                         application.config.vertx?.testing ? true : false)
             } else {
-                consoleError 'You need at least Java 1.7 to run Vert.x'
+                consoleWarning 'You need at least Java 1.7 to run Vert.x'
             }
         }
 
@@ -143,7 +143,7 @@ Also use Vert.x to use events between server and gsps.
             if (application.mainContext.grooscriptConverter.canConvertModel) {
                 //launchDomainFileChangesListener(application)
             } else {
-                consoleError "You need at least Groovy ${GROOVY_VERSION_MODEL_REQUIRED} to work with the model."
+                consoleWarning "You need at least Groovy ${GROOVY_VERSION_MODEL_REQUIRED} to work with the model."
             }
         }
     }
