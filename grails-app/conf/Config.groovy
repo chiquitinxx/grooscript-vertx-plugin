@@ -78,7 +78,9 @@ grails.resources.modules = {
     }
 }
 
-grooscript.model = [ [name: 'org.grooscript.domain.DomainItem']]
+grooscript.model = [
+        [name: 'org.grooscript.domain.DomainItem', create: true, read: true, update: true,delete: { -> false}]
+]
 
 phantomjs.path = '/Applications/phantomjs'
 savedFiles.listener = ['web-app/css']
