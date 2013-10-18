@@ -12,8 +12,9 @@ class GrooscriptVertxService {
     static final READ_ACTION = 'read'
     static final UPDATE_ACTION = 'update'
     static final DELETE_ACTION = 'delete'
-
     static final ALL_DOMAIN_ACTIONS = [CREATE_ACTION, READ_ACTION, UPDATE_ACTION, DELETE_ACTION]
+
+    private static final NOT_ALLOWED_PROPERTIES = ['id', 'version']
 
     boolean existDomainClass(String nameClass) {
         nameClass && existShortDomainClassName(nameClass)
@@ -82,6 +83,18 @@ class GrooscriptVertxService {
                 result = true
             }
         }
+        def getItemById() {
+            domainClass?.get(actionCommand?.data?.id)
+        }
+        def deleteItem(item) {
+            try {
+                item.delete()
+                result = true
+            } catch (e) {
+                actionCommand.doingActionError =
+                    "Error deleting ${domainClassName} id:${item.id}"
+            }
+        }
     }
 
     private validateAction(String domainClassName, ActionCommand actionCommand, Closure closure) {
@@ -119,17 +132,16 @@ class GrooscriptVertxService {
         }
     }
 
-    @Transactional
-    boolean read(String domainClassName, ActionCommand actionCommand) {
-
+    def read(String domainClassName, ActionCommand actionCommand) {
+        validateAction(domainClassName, actionCommand) {
+            result = getItemById()
+        }
     }
-
-    static final NOT_ALLOWED_PROPERTIES = ['id', 'version']
 
     @Transactional
     boolean update(String domainClassName, ActionCommand actionCommand) {
         validateAction(domainClassName, actionCommand) {
-            def item = domainClass.get(actionCommand?.data?.id)
+            def item = getItemById()
             if (item) {
                 passParametersToItem(item)
                 validateAndSave(item)
@@ -142,6 +154,11 @@ class GrooscriptVertxService {
 
     @Transactional
     boolean delete(String domainClassName, ActionCommand actionCommand) {
-
+        validateAction(domainClassName, actionCommand) {
+            def item = getItemById()
+            if (item) {
+                deleteItem(item)
+            }
+        }
     }
 }

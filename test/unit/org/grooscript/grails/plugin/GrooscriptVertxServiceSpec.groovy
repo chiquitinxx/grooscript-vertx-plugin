@@ -2,8 +2,6 @@ package org.grooscript.grails.plugin
 
 import grails.test.mixin.Mock
 import grails.test.mixin.TestFor
-import grails.test.mixin.TestMixin
-import grails.test.mixin.domain.DomainClassUnitTestMixin
 import org.grooscript.domain.DomainItem
 import org.grooscript.grails.ActionCommand
 import org.springframework.validation.Errors
@@ -15,7 +13,7 @@ import static org.grooscript.grails.plugin.GrooscriptVertxService.*
  * See the API for {@link grails.test.mixin.services.ServiceUnitTestMixin} for usage instructions
  */
 @TestFor(GrooscriptVertxService)
-@Mock(DomainItem)
+@Mock([DomainItem])
 class GrooscriptVertxServiceSpec extends Specification {
 
     static final FAKE_NAME = 'fake domain class'
@@ -25,6 +23,11 @@ class GrooscriptVertxServiceSpec extends Specification {
     static final CAN_READ = false
     static final CAN_UPDATE = { -> true}
     static final CAN_DELETE = { -> false}
+
+    static final VALID_DOMAIN_ITEM = [name: GOOD_NAME]
+    static final VALID_DOMAIN_ITEM_UPDATE = [name: UPDATED_NAME, date: new Date(), id:1]
+    static final INVALID_DOMAIN_ITEM = [name: FAKE_NAME]
+    static final ERROR_DOMAIN_ITEM = [name: GOOD_NAME, date: FAKE_NAME]
 
     def setup() {
         service.metaClass.existShortDomainClassName = { String name ->
@@ -89,23 +92,6 @@ class GrooscriptVertxServiceSpec extends Specification {
         false        | false     | 2
     }
 
-
-    static final VALID_DOMAIN_ITEM = [name: GOOD_NAME]
-    static final VALID_DOMAIN_ITEM_UPDATE = [name: UPDATED_NAME, date: new Date()]
-    static final INVALID_DOMAIN_ITEM = [name: FAKE_NAME]
-    static final ERROR_DOMAIN_ITEM = [name: GOOD_NAME, date: FAKE_NAME]
-
-    def setupCommandWithDomain(action, data) {
-        def command = Mock(ActionCommand)
-        command.className >> DomainItem.class.simpleName
-        command.action >> action
-        command.data >> data
-        command.metaClass.setDoingActionError = { String msg ->
-            println '******* '+msg
-        }
-        command
-    }
-
     def 'success create a domain class'() {
         given:
         def command = setupCommandWithDomain(CREATE_ACTION, VALID_DOMAIN_ITEM)
@@ -121,43 +107,81 @@ class GrooscriptVertxServiceSpec extends Specification {
 
         and:
         DomainItem.count == 1
-        DomainItem.list()[0].id
-        DomainItem.list()[0].name == VALID_DOMAIN_ITEM.name
+        DomainItem.list().first().id
+        DomainItem.list().first().name == VALID_DOMAIN_ITEM.name
     }
 
-    def 'error create a domain class'() {
+    def 'error create and updating a domain class'() {
         given:
         def command = setupCommandWithDomain(CREATE_ACTION, data)
 
         when:
-        def result = service.create(DomainItem.class.simpleName, command)
+        def result = service."${action}"(DomainItem.class.simpleName, command)
 
         then:
         !result
 
         where:
-        data << [INVALID_DOMAIN_ITEM, ERROR_DOMAIN_ITEM]
+        action        | data
+        CREATE_ACTION | INVALID_DOMAIN_ITEM
+        CREATE_ACTION | ERROR_DOMAIN_ITEM
     }
 
-    /*
     def 'success update a domain class'() {
         given:
-        def command = setupCommandWithDomain(UPDATE_ACTION, VALID_DOMAIN_ITEM)
-        new DomainItem(name: GOOD_NAME).save(failOnError: true, flush: true)
-
-        expect:
-        DomainItem.get(1).name == GOOD_NAME
+        insertDomainClass()
 
         when:
-        command.metaClass.getData = { -> VALID_DOMAIN_ITEM_UPDATE + [id: 1] }
+        def command = setupCommandWithDomain(UPDATE_ACTION, VALID_DOMAIN_ITEM_UPDATE)
         def result = service.update(command.className, command)
 
         then:
         result
+        DomainItem.list().first().name == UPDATED_NAME
+    }
 
-        and:
-        DomainItem.count == 1
-        DomainItem.list()[0].id == old(DomainItem.list()[0].id)
-        DomainItem.list()[0].name == VALID_DOMAIN_ITEM_UPDATE.name
-    } */
+    def 'success delete a domain class'() {
+        given:
+        insertDomainClass()
+
+        when:
+        def command = setupCommandWithDomain(DELETE_ACTION, VALID_DOMAIN_ITEM_UPDATE)
+        def result = service.delete(command.className, command)
+
+        then:
+        result
+        DomainItem.count == 0
+    }
+
+    def 'success read a domain class'() {
+        given:
+        insertDomainClass()
+
+        when:
+        def command = setupCommandWithDomain(READ_ACTION, VALID_DOMAIN_ITEM_UPDATE)
+        def result = service.read(command.className, command)
+
+        then:
+        result == DomainItem.list().first()
+    }
+
+    def setupCommandWithDomain(action, data) {
+        def command = Mock(ActionCommand)
+        command.className >> DomainItem.class.simpleName
+        command.action >> action
+        command.data >> data
+        command.metaClass.setDoingActionError = { String msg ->
+            println '******* '+msg
+        }
+        //WTF have to create this mock :/ get not working
+        GrooscriptVertxService.Actions.metaClass.getItemById = {
+            DomainItem.list() ? DomainItem.list().first() : null
+        }
+        command
+    }
+
+    private insertDomainClass() {
+        def command = setupCommandWithDomain(CREATE_ACTION, VALID_DOMAIN_ITEM)
+        service.create(command.className, command)
+    }
 }
