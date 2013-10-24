@@ -1,6 +1,7 @@
 package org.grooscript.grails.plugin
 
 import org.grooscript.asts.PhantomJsTest
+import org.grooscript.grails.plugin.test.PhantomJsCase
 
 /**
  * @author Jorge Franco
@@ -43,4 +44,11 @@ class PhantomJsTests extends PhantomJsCase {
     void testWaitSeconds() {
         assert $('#points').html() == '.',"points Html after is ${$('#points').html()}"
     }
+
+    /*void testInMainController() {
+        phantomJs(controller: 'main', code: '''
+            assert true
+        ''')
+        assert true
+    }*/
 }
