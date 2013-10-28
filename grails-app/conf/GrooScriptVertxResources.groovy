@@ -1,6 +1,6 @@
 modules = {
-    kimbo {
-        resource url:'/js/kimbo.min.js'
+    jquery {
+        resource url:'/js/jquery-2.0.3.min.js'
     }
     sockjs {
         resource url:'/js/sockjs.js'

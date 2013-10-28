@@ -17,7 +17,8 @@
     <button type="button" id="addButton" onclick="grooscriptEvents.sendMessage('redraw',null);">Add</button>
 
     <grooscript:template listenEvents="['redraw']">
-        def number = numberTimes++
+        def number = numberTimes
+        numberTimes = numberTimes + 1
         h3 'Number of times: ' + number
         number.times { num ->
             p ' '+num

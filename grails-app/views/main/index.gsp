@@ -6,7 +6,7 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <html>
 <head>
-    <r:require modules="vertx,kimbo"/>
+    <r:require modules="vertx, jquery"/>
     <r:external uri="/css/style.css"/>
     <title>Title</title>
     <r:layoutResources/>

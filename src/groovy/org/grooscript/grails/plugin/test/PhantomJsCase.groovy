@@ -1,7 +1,7 @@
 package org.grooscript.grails.plugin.test
 
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator
-import org.grooscript.GsConverter
+import org.grooscript.convert.GsConverter
 import org.grooscript.asts.PhantomJsTestImpl
 import org.springframework.beans.factory.annotation.Autowired
 import static org.grooscript.grails.util.Util.*

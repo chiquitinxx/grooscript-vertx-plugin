@@ -97,7 +97,7 @@ class GrooScriptVertxTagLibSpec extends Specification {
 
         then:
         1 * resourceTaglib.script(_)
-        1 * resourceTaglib.require([module: 'kimbo'])
+        1 * resourceTaglib.require([module: 'jquery'])
         1 * resourceTaglib.require([module: 'grooscript'])
         1 * resourceTaglib.require([module: 'grooscriptGrails'])
         1 * grooscriptConverter.toJavascript('Builder.process { -> assert true}') >> ''

@@ -7,7 +7,7 @@
 <html>
 <head>
     <title>Vert.x events</title>
-    <r:require module="kimbo"/>
+    <r:require module="jquery"/>
     <r:layoutResources/>
 </head>
 <body>
