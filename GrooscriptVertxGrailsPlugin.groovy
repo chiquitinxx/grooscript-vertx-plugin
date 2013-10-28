@@ -13,7 +13,7 @@ class GrooscriptVertxGrailsPlugin {
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
         "grails-app/views/error.gsp",
-        "grails-app/controllers/**",
+        "grails-app/controllers/grooscript/vertx/**",
         "grails-app/domain/**",
         "grails-app/views/**",
         "src/Message.groovy",
