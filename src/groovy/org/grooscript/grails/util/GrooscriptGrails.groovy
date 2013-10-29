@@ -11,7 +11,7 @@ class GrooscriptGrails {
     @GsNative
     static sendClientMessage(String channel, message) {/*
         var sendMessage = message;
-        if (message['gSclass'] == undefined) {
+        if (message['clazz'] == undefined) {
             message = GrooscriptGrails.toGroovy(message);
         }
         grooscriptEvents.sendMessage(channel, message);
@@ -20,7 +20,7 @@ class GrooscriptGrails {
     @GsNative
     static sendServerMessage(String channel, message) {/*
         var sendMessage = message;
-        if (message['gSclass'] !== undefined) {
+        if (message['clazz'] !== undefined) {
             message = GrooscriptGrails.toJavascript(message);
         }
         grooscriptEventBus.send(channel, message);
@@ -40,7 +40,7 @@ class GrooscriptGrails {
                 if (message instanceof Object) {
                     result = {};
                     for (ob in message) {
-                        if (!isgSmapProperty(ob)) {
+                        if (!gs.isMapProperty(ob)) {
                             result[ob] = GrooscriptGrails.toJavascript(message[ob]);
                         }
                     }
@@ -57,14 +57,14 @@ class GrooscriptGrails {
         var result;
         if (message!=null && message!=undefined && typeof(message) !== "function") {
             if (message instanceof Array) {
-                result = gSlist([]);
+                result = gs.list([]);
                 var i;
                 for (i = 0; i < message.length; i++) {
                     result.add(GrooscriptGrails.toGroovy(message[i]));
                 }
             } else {
                 if (message instanceof Object) {
-                    result = gSmap();
+                    result = gs.map();
                     for (ob in message) {
                         result.add(ob, GrooscriptGrails.toGroovy(message[ob]));
                     }
