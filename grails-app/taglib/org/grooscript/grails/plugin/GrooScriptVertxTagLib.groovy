@@ -106,7 +106,7 @@ class GrooScriptVertxTagLib {
         }
         if (script) {
             r.require(module: 'grooscript')
-            def jsCode = grooscriptConverter.toJavascript(script)
+            def jsCode = grooscriptConverter.toJavascript(script.toString())
             r.script() {
                 out << jsCode
             }
