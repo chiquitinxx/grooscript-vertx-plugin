@@ -16,7 +16,7 @@ grails.project.dependency.resolution = {
     dependencies {
         compile 'org.vert-x:vertx-lang-groovy:1.3.1.final'
         compile 'org.codehaus.jsr166-mirror:jsr166y:1.7.0'
-        compile 'org.codehaus.gpars:gpars:1.1.0'
+        compile 'org.codehaus.gpars:gpars:1.0.0'
         compile ('org.grooscript:grooscript:0.4-SNAPSHOT') {
             exclude 'groovy'
         }

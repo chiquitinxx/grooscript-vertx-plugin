@@ -92,18 +92,18 @@ Also use Vert.x to use events between server and gsps.
 
         if (Environment.current == Environment.DEVELOPMENT) {
 
-            def doAfter = { list ->
-                if (list.size() > 0) {
+            def doAfterDefault = { listFiles ->
+                if (listFiles.size() > 0) {
                     sendReloadNotificationIfNeeded(application)
                 }
             }
 
-            launchFileChangesListeners(application, doAfter)
+            launchFileChangesListeners(application, doAfterDefault)
 
             def source = application.config.grooscript?.daemon?.source
             def destination = application.config.grooscript?.daemon?.destination
             def options = application.config.grooscript?.daemon?.options
-            def doAfterOption = application.config.grooscript?.daemon?.doAfter
+            def doAfterConfig = application.config.grooscript?.daemon?.doAfter
 
             //By default
             options = application.mainContext.grooscriptConverter.addGroovySourceClassPathIfNeeded(options)
@@ -112,13 +112,13 @@ Also use Vert.x to use events between server and gsps.
             if (source && destination) {
                 GrooScript.clearAllOptions()
                 def doAfterDaemon
-                if (doAfterOption && doAfterOption instanceof Closure) {
-                    doAfterDaemon = { list ->
-                        doAfter(list)
-                        doAfterDaemon(list)
+                if (doAfterConfig && doAfterConfig instanceof Closure) {
+                    doAfterDaemon = { listFilesList ->
+                        doAfterDefault(listFilesList)
+                        doAfterConfig(listFilesList)
                     }
                 } else {
-                    doAfterDaemon = doAfter
+                    doAfterDaemon = doAfterDefault
                 }
                 GrooScript.startConversionDaemon(source, destination, options, doAfterDaemon)
                 GrooScript.clearAllOptions()

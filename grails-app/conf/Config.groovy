@@ -46,6 +46,11 @@ grooscript {
     daemon {
         source = ['src/Message.groovy']
         destination = 'web-app/js'
+        doAfter = { data ->
+            if (data) {
+                println "List of converted files ${data}"
+            }
+        }
     }
 }
 
