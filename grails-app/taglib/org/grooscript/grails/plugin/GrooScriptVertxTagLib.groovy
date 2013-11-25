@@ -138,7 +138,6 @@ class GrooScriptVertxTagLib {
             String jsCode = grooscriptConverter.toJavascript("Builder.process { -> ${script}}").trim()
 
             r.require(module: 'grooscript')
-            r.require(module: 'jquery')
             r.require(module: 'grooscriptGrails')
 
             processTemplateEvents(attrs.listenEvents, functionName)

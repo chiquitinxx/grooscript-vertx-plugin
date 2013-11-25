@@ -97,7 +97,6 @@ class GrooScriptVertxTagLibSpec extends Specification {
 
         then:
         1 * resourceTaglib.script(_)
-        1 * resourceTaglib.require([module: 'jquery'])
         1 * resourceTaglib.require([module: 'grooscript'])
         1 * resourceTaglib.require([module: 'grooscriptGrails'])
         1 * grooscriptConverter.toJavascript('Builder.process { -> assert true}') >> ''
@@ -113,7 +112,7 @@ class GrooScriptVertxTagLibSpec extends Specification {
         then:
         1 * resourceTaglib.script(_)
         1 * grooscriptConverter.toJavascript(_) >> ''
-        3 * resourceTaglib.require(_)
+        2 * resourceTaglib.require(_)
         0 * _
         !result
     }
@@ -127,7 +126,7 @@ class GrooScriptVertxTagLibSpec extends Specification {
         then:
         1 * resourceTaglib.script(_)
         1 * grooscriptConverter.toJavascript("Builder.process { -> ${new File(FILE_PATH_TEMPLATE).text}}") >> ''
-        3 * resourceTaglib.require(_)
+        2 * resourceTaglib.require(_)
         0 * _
         result.startsWith "\n<div id='fTemplate"
     }
@@ -139,7 +138,7 @@ class GrooScriptVertxTagLibSpec extends Specification {
 
         then:
         2 * resourceTaglib.script(_)
-        3 * resourceTaglib.require(_)
+        2 * resourceTaglib.require(_)
         1 * grooscriptConverter.toJavascript(_) >> ''
         1 * resourceTaglib.require([module: 'clientEvents'])
         0 * _

@@ -7,7 +7,8 @@
 <html>
 <head>
   <title>Testing template</title>
-  <r:layoutResources/>
+    <r:require module="jquery"/>
+    <r:layoutResources/>
 </head>
 <body>
 

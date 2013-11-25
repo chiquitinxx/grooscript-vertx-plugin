@@ -7,6 +7,7 @@
 <html>
 <head>
   <title>Title Test</title>
+  <r:require module="jquery"/>
   <r:layoutResources/>
 </head>
 <body>

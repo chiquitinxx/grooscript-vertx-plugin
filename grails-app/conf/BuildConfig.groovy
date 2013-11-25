@@ -35,6 +35,7 @@ grails.project.dependency.resolution = {
 
         //test ":resources:1.2.1"
         compile ":cache:1.1.1"
+        runtime ":jquery:1.10.2.2"
 
         test(":spock:0.7") {
             exclude "spock-grails-support"

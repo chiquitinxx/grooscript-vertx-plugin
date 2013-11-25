@@ -55,9 +55,6 @@ grooscript {
 }
 
 grails.resources.modules = {
-    jquery {
-        resource url:'/js/jquery-2.0.3.min.js'
-    }
     sockjs {
         resource url:'/js/sockjs.js'
     }

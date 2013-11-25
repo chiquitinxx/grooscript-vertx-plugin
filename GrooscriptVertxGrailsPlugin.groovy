@@ -27,7 +27,7 @@ class GrooscriptVertxGrailsPlugin {
     ]
 
     def dependsOn = [resources: "1.2.1 > *",
-            cache: "1.1.1 > *"]
+            cache: "1.1.1 > *", jquery: "1.10 > *"]
 
     def title = "Grooscript Vertx Plugin"
     def author = "Jorge Franco"
@@ -77,7 +77,9 @@ Also use Vert.x to use events between server and gsps.
                         application.config.vertx?.eventBus?.outboundPermitted?:[],
                         application.config.vertx?.testing ? true : false)
             } else {
-                consoleWarning 'You need at least Java 1.7 to run Vert.x'
+                if (application.config.vertx) {
+                    consoleWarning 'You need at least Java 1.7 to run Vert.x'
+                }
             }
         }
 
@@ -140,7 +142,7 @@ Also use Vert.x to use events between server and gsps.
 
         if (Environment.current == Environment.DEVELOPMENT) {
             launchFileChangesListener(application, doAfter)
-            if (application.mainContext.grooscriptConverter.canConvertModel) {
+            if (application.mainContext.grooscriptConverter.canConvertModel && application.config.grooscript?.model) {
                 //launchDomainFileChangesListener(application)
             } else {
                 consoleWarning "You need at least Groovy ${GROOVY_VERSION_MODEL_REQUIRED} to work with the model."

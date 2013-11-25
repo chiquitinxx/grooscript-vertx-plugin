@@ -1589,6 +1589,10 @@
         }
     }
 
+    String.prototype.capitalize = function() {
+        return this.charAt(0).toUpperCase() + this.slice(1);
+    }
+
     function getItemsMultiline(text) {
         var items = text.split('\n');
         if (items.length>1 && items[items.length-1]=='') {
@@ -2325,13 +2329,18 @@
         };
     };
 
-    //MISC
+    //MISC Find scope of a var
     gs.fs = function(name, thisScope) {
         if (thisScope != undefined && thisScope[name] != undefined) {
             return thisScope[name];
         } else {
-            var func = new Function("return "+name)
-            return func();
+            var value = gs.gp(thisScope, name);
+            if (value == undefined) {
+                var func = new Function("return "+name)
+                return func();
+            } else {
+                return value;
+            }
         }
     };
 
