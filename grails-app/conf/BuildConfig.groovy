@@ -17,7 +17,7 @@ grails.project.dependency.resolution = {
         compile 'org.vert-x:vertx-lang-groovy:1.3.1.final'
         compile 'org.codehaus.jsr166-mirror:jsr166y:1.7.0'
         compile 'org.codehaus.gpars:gpars:1.0.0'
-        compile ('org.grooscript:grooscript:0.4-SNAPSHOT') {
+        compile ('org.grooscript:grooscript:0.4') {
             exclude 'groovy'
         }
         test "org.spockframework:spock-grails-support:0.7-groovy-2.0"

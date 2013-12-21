@@ -35,6 +35,8 @@
     //Delegate
     var actualDelegate = null;
 
+    gs.myCategories = {};
+
     /////////////////////////////////////////////////////////////////
     // assert and println
     /////////////////////////////////////////////////////////////////
@@ -61,6 +63,11 @@
         }
     };
 
+    //TODO We don't know if a function is constructor, atm if function name starts with uppercase, it is
+    function isConstructor(name, func) {
+        return name[0] == name[0].toUpperCase();
+    }
+
     /////////////////////////////////////////////////////////////////
     // Class functions
     /////////////////////////////////////////////////////////////////
@@ -82,8 +89,7 @@
                 if (typeof this[ob] === "function") {
 
                     if (ob!='getStatic' && ob!='withz' && ob!='getProperties' && ob!='getMethods' && ob!='constructor' &&
-                        //TODO We don't know if a function is constructor, atm if function name starts with uppercase, it is
-                        ob[0] != ob[0].toUpperCase()) {
+                        !(isConstructor(ob, this[ob]))) {
                         var item = {
                             name: ob
                         };
@@ -106,6 +112,13 @@
         constructor : function() {
             return this;
         }
+    }
+
+    function isObjectProperty(name) {
+        return ['clazz','gSdefaultValue','leftShift',
+            'minus','plus','equals','toString',
+            'clone','withz','getProperties',
+            'getMethods','invokeMethod','constructor'].indexOf(name) >= 0;
     }
 
     gs.expando = function() {
@@ -323,11 +336,17 @@
     }
 
     gs.map = function() {
-        var object = gs.inherit(gs.baseClass,'LinkedHashMap');
+        var object = new GsGroovyMap();
+        //gs.inherit(gs.baseClass,'LinkedHashMap');
+        expandWithMetaclass(object, 'LinkedHashMap');
 
-        createClassNames(object,['java.util.LinkedHashMap','java.util.HashMap']);
+        return object;
+    }
 
-        object.add = function(key,value) {
+    function GsGroovyMap() {
+        this.clazz = { name: 'java.util.LinkedHashMap', simpleName: 'LinkedHashMap',
+            superclass: { name: 'java.util.HashMap', simpleName: 'HashMap'}}
+        this.add = function(key,value) {
             if (key=="spreadMap") {
                 //We insert items of the map, from spread operator
                 var ob;
@@ -341,20 +360,20 @@
             }
             return this;
         }
-        object.put = function(key,value) {
+        this.put = function(key,value) {
             return this.add(key,value);
         }
-        object.leftShift = function(key,value) {
+        this.leftShift = function(key,value) {
             if (arguments.length == 1) {
                 return this.plus(arguments[0]);
             } else {
                 return this.add(key,value);
             }
         }
-        object.putAt = function(key,value) {
+        this.putAt = function(key,value) {
             this.put(key,value);
         }
-        object.size = function() {
+        this.size = function() {
             var number = 0,ob;
             for (ob in this) {
                 if (!isMapProperty(ob)) {
@@ -363,15 +382,15 @@
             }
             return number;
         }
-        object.isEmpty = function() {
+        this.isEmpty = function() {
             return (this.size() == 0);
         }
-        object.remove = function(key) {
+        this.remove = function(key) {
             if (this[key]) {
                 delete this[key];
             }
         }
-        object.each = function(closure) {
+        this.each = function(closure) {
             var ob;
             for (ob in this) {
                 if (!isMapProperty(ob)) {
@@ -387,7 +406,7 @@
             }
         }
 
-        object.count = function(closure) {
+        this.count = function(closure) {
             var number = 0, ob;
             for (ob in this) {
                 if (!isMapProperty(ob)) {
@@ -406,7 +425,7 @@
             return number;
         }
 
-        object.any = function(closure) {
+        this.any = function(closure) {
             var ob;
             for (ob in this) {
                 if (!isMapProperty(ob)) {
@@ -426,7 +445,7 @@
             return false;
         }
 
-        object.every = function(closure) {
+        this.every = function(closure) {
             var ob;
             for (ob in this) {
                 if (!isMapProperty(ob)) {
@@ -446,7 +465,7 @@
             return true;
         }
 
-        object.find = function(closure) {
+        this.find = function(closure) {
             var ob;
             for (ob in this) {
                 if (!isMapProperty(ob)) {
@@ -467,7 +486,7 @@
             return null;
         }
 
-        object.findAll = function(closure) {
+        this.findAll = function(closure) {
             var result = gs.map(), ob;
             for (ob in this) {
                 if (!isMapProperty(ob)) {
@@ -492,7 +511,7 @@
             }
         }
 
-        object.collect = function(closure) {
+        this.collect = function(closure) {
             var result = gs.list([]), ob;
             for (ob in this) {
                 if (!isMapProperty(ob)) {
@@ -512,14 +531,15 @@
             }
         }
 
-        object.containsKey = function(key) {
+        this.containsKey = function(key) {
             if (this[key]==undefined || this[key]==null) {
                 return false;
             } else {
                 return true;
             }
         }
-        object.containsValue = function(value) {
+
+        this.containsValue = function(value) {
             var gotIt = false;
             for (ob in this) {
                 if (!isMapProperty(ob)) {
@@ -532,14 +552,14 @@
             return gotIt;
         }
 
-        object.get = function(key, defaultValue) {
+        this.get = function(key, defaultValue) {
             if (!this.containsKey(key)) {
                 this[key] = defaultValue;
             }
             return this[key];
         }
 
-        object.toString = function() {
+        this.toString = function() {
             var items = '';
             this.each (function(key,value) {
                 items = items + key+': '+value+' ,';
@@ -547,7 +567,7 @@
             return '[' + items + ']';
         }
 
-        object.equals = function(otherMap) {
+        this.equals = function(otherMap) {
 
             var result = true, ob;
             for (ob in this) {
@@ -560,7 +580,7 @@
             return result;
         }
 
-        object.values = function() {
+        this.values = function() {
             var result = gs.list([]), ob;
             for (ob in this) {
                 if (!isMapProperty(ob)) {
@@ -570,14 +590,14 @@
             return result;
         }
 
-        object.gSdefaultValue = null;
+        this.gSdefaultValue = null;
 
-        object.withDefault = function(closure) {
+        this.withDefault = function(closure) {
             this.gSdefaultValue = closure;
             return this;
         }
 
-        object.inject = function(initial,closure) {
+        this.inject = function(initial,closure) {
             var ob;
             for (ob in this) {
                 if (!isMapProperty(ob)) {
@@ -593,7 +613,7 @@
             return initial;
         }
 
-        object.putAll = function (items) {
+        this.putAll = function (items) {
             if (items instanceof Array) {
                 var i;
                 for (i=0;i<items.length;i++) {
@@ -610,7 +630,7 @@
             return this;
         }
 
-        object.plus = function(other) {
+        this.plus = function(other) {
             var result = this.clone();
             if (other instanceof Array) {
                 result.putAll(other);
@@ -625,7 +645,7 @@
             return result;
         }
 
-        object.clone = function() {
+        this.clone = function() {
             var result = gs.map(), ob;
             for (ob in this) {
                 if (!isMapProperty(ob)) {
@@ -635,7 +655,7 @@
             return result;
         }
 
-        object.minus = function(other) {
+        this.minus = function(other) {
             var result = this.clone(), ob;
             for (ob in other) {
                 if (!isMapProperty(ob)) {
@@ -646,7 +666,6 @@
             }
             return result;
         }
-        return object;
     }
 
     /////////////////////////////////////////////////////////////////
@@ -695,6 +714,8 @@
                 for (i=0;i<elements.length;i++) {
                     this.add(elements[i]);
                 }
+            } else {
+                this[this.length] = elements;
             }
         } else {
             //Two parameters index and collection
@@ -1657,6 +1678,10 @@
         }
     }
 
+    String.prototype.plus = function(other) {
+        return this + other.toString()
+    }
+
     /////////////////////////////////////////////////////////////////
     // Misc Functions
     /////////////////////////////////////////////////////////////////
@@ -2048,19 +2073,31 @@
                 if (categories.length > 0) {
                     var whereExecutes = categorySearching(methodName);
                     if (whereExecutes!=null) {
-                        return whereExecutes[methodName].apply(item,joinParameters(item,values));
+                        return whereExecutes[methodName].apply(item, joinParameters(item,values));
                     }
                 }
+
+                //In @Category
+                var ob;
+                for (ob in annotatedCategories) {
+                    if (annotatedCategories[ob] == item.clazz.simpleName) {
+                        var categoryItem = gs.myCategories[ob]();
+                        if (categoryItem[methodName] && typeof categoryItem[methodName] === "function") {
+                            return categoryItem[methodName].apply(item, joinParameters(item,values));
+                        }
+                    }
+                }
+
                 //Lets check in mixins classes
                 if (mixins.length>0) {
                     var whereExecutes = mixinSearching(item,methodName);
                     if (whereExecutes!=null) {
-                        return whereExecutes[methodName].apply(item,joinParameters(item,values));
+                        return whereExecutes[methodName].apply(item, joinParameters(item,values));
                     }
                 }
                 //Lets check in mixins objects
                 if (mixinsObjects.length>0) {
-                    var whereExecutes = mixinObjectsSearching(item,methodName);
+                    var whereExecutes = mixinObjectsSearching(item, methodName);
                     if (whereExecutes!=null) {
                         return whereExecutes[methodName].apply(item,joinParameters(item,values));
                     }
@@ -2108,9 +2145,60 @@
     // Categories
     ////////////////////////////////////////////////////////////
     gs.categoryUse = function(item, closure) {
-        categories[categories.length] = item;
+        if (existAnnotatedCategory(item)) {
+            var ob, categoryCreated = gs.myCategories[item]();
+            for (ob in categoryCreated) {
+                if (!isObjectProperty(ob) && !isConstructor(ob, categoryCreated[ob]) &&
+                    typeof categoryCreated[ob] === "function") {
+                    addFunctionToClassIfPrototyped(ob, categoryCreated[ob], annotatedCategories[item]);
+                }
+            }
+        } else {
+            categories[categories.length] = item;
+        }
         closure();
-        categories.splice(categories.length - 1, 1);
+        if (existAnnotatedCategory(item)) {
+            var ob, categoryCreated = gs.myCategories[item]();
+            for (ob in categoryCreated) {
+                if (!isObjectProperty(ob) && !isConstructor(ob, categoryCreated[ob]) &&
+                    typeof categoryCreated[ob] === "function") {
+                    removeFunctionToClass(ob, categoryCreated[ob], annotatedCategories[item]);
+                }
+            }
+        } else {
+            categories.splice(categories.length - 1, 1);
+        }
+    }
+
+    function getProtoypeOfClass(className) {
+        if (className == 'String') {
+            return String.prototype;
+        }
+        if (className == 'Number') {
+            return Number.prototype;
+        }
+        if (className == 'ArrayList') {
+            return Array.prototype;
+        }
+        return null;
+    }
+
+    function addFunctionToClassIfPrototyped(name, func, className) {
+        var proto = getProtoypeOfClass(className);
+        if  (proto != null) {
+            if (proto[name] == null) {
+                proto[name] = func;
+            }
+        }
+    }
+
+    function removeFunctionToClass(name, func, className) {
+        var proto = getProtoypeOfClass(className);
+        if  (proto != null) {
+            if (proto[name] == func) {
+                proto[name] = null;
+            }
+        }
     }
 
     function categorySearching(methodName) {
@@ -2123,6 +2211,15 @@
             }
         }
         return result;
+    }
+
+    function existAnnotatedCategory(name) {
+        return (annotatedCategories[name]!=null && annotatedCategories[name]!=undefined);
+    }
+
+    var annotatedCategories = {};
+    gs.addAnnotatedCategory = function(nameCategory, nameClass) {
+        annotatedCategories[nameCategory] = nameClass;
     }
 
     ////////////////////////////////////////////////////////////

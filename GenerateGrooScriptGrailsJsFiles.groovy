@@ -1,4 +1,4 @@
-@Grab('org.grooscript:grooscript:0.4-SNAPSHOT')
+@Grab('org.grooscript:grooscript:0.4')
 
 import org.grooscript.GrooScript
 
