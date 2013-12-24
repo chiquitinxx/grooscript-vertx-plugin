@@ -8,8 +8,8 @@ import spock.lang.Unroll
 /**
  * See the API for {@link grails.test.mixin.web.ControllerUnitTestMixin} for usage instructions
  */
-@TestFor(DomainController)
-class DomainControllerSpec extends Specification {
+@TestFor(RemoteDomainController)
+class RemoteDomainControllerSpec extends Specification {
 
     private static final DATA = ['hello':'hello']
     private static final ERRORS = ['error 1']

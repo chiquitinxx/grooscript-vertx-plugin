@@ -1,6 +1,6 @@
 package org.grooscript.grails
 
-class DomainController {
+class RemoteDomainController {
 
     static final OK = 'OK'
     static final KO = 'KO'
@@ -13,8 +13,9 @@ class DomainController {
 
         render(contentType:"text/json") {
             result = (validation && execution ? OK : KO)
-            data = command.data
+            data = command.data ?: 'ERROR'
             listErrors = grooscriptVertxService.getErrorsForClient(command, validation, execution)
+            className = command.className
         }
     }
 }

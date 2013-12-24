@@ -17,23 +17,24 @@ class PhantomJsCase extends GroovyTestCase {
     @Autowired
     LinkGenerator grailsLinkGenerator
 
-    //TODO not working atm, need fix in grooscript
     def phantomJs(params) {
         if (params.controller && params.code) {
-            def url = grailsLinkGenerator.link(params)
-            def converter = new GsConverter()
-            converter.classPath = 'src/main'
-            def testCode = converter.toJs("def ${FUNCTION_NAME} = { -> \n" + params.code + "\n}\n")
+            def url
             if (!grailsLinkGenerator.getContextPath()) {
-                url += '/grooscript-vertx'
+                url = grailsLinkGenerator.getServerBaseURL() + '/grooscript-vertx/' + params.controller +
+                        (params.domainAction ? "/${params.domainAction}" : '')
+            } else {
+                url = grailsLinkGenerator.link(params)
             }
-            println 'url->'+url
-            println 'basr->'+grailsLinkGenerator.getServerBaseURL()
-            println 'context->'+grailsLinkGenerator.getContextPath()
-            println 'testCode->'+testCode
-            PhantomJsTestImpl.doPhantomJsTest(url, testCode, FUNCTION_NAME)
+            PhantomJsTestImpl.doPhantomJsTest(url, convertCodeToJavascript(params.code), FUNCTION_NAME)
         } else {
-            consoleError 'Need define "controller" and "code" params at least'
+            assert false, 'Need define "controller" and "code" params at least'
         }
+    }
+
+    private convertCodeToJavascript(code) {
+        def converter = new GsConverter()
+        converter.classPath = 'src/main'
+        converter.toJs("def ${FUNCTION_NAME} = { -> \n" + code + "\n}\n")
     }
 }

@@ -13,18 +13,18 @@ class ActionCommand {
 
     transient grooscriptVertxService
 
-    String action
+    String domainAction
     String className
     Map data
     String doingActionError
 
     static constraints = {
-        action nullable: false, blank: false, validator: { value ->
+        domainAction nullable: false, blank: false, validator: { value ->
             value in GrooscriptVertxService.ALL_DOMAIN_ACTIONS
         }
         className nullable: false, blank: false, validator: { value, o ->
             o.grooscriptVertxService.existDomainClass(value) &&
-                    o.grooscriptVertxService.canDoActionWithDomainClass(value, o.action)
+                    o.grooscriptVertxService.canDoActionWithDomainClass(value, o.domainAction)
         }
         data nullable: false
         doingActionError nullable: true
@@ -33,7 +33,7 @@ class ActionCommand {
     def execute() {
         def result
         try {
-            result = grooscriptVertxService."${action}"(className, this)
+            result = grooscriptVertxService."${domainAction}"(className, this)
         } catch (e) {
             result = false
             consoleError e.message

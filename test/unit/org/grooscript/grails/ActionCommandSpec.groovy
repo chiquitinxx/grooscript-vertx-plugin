@@ -29,40 +29,40 @@ class ActionCommandSpec extends Specification {
         when:
         cmd.data = map
         cmd.className = className
-        cmd.action = action
+        cmd.domainAction = domainAction
         def result = cmd.validate()
 
         then:
-        _ * cmd.grooscriptVertxService.canDoActionWithDomainClass(className, action) >> canAccess
+        _ * cmd.grooscriptVertxService.canDoActionWithDomainClass(className, domainAction) >> canAccess
         _ * cmd.grooscriptVertxService.existDomainClass(className) >> existClass
         result == expectedResult
 
         where:
-        action      | map  | className | canAccess | existClass | expectedResult
-        _           | null | _         | _         | _          | false
-        null        | [:]  | _         | _         | _          | false
-        _           | [:]  | null      | _         | _          | false
-        null        | [:]  | ''        | _         | _          | false
-        null        | [:]  | 'any'     | false     | false      | false
-        ''          | [:]  | 'any'     | false     | false      | false
-        FAKE_ACTION | [:]  | 'any'     | false     | false      | false
-        READ_ACTION | [:]  | 'any'     | true      | true       | true
-        READ_ACTION | [:]  | 'any'     | true      | false      | false
-        READ_ACTION | [:]  | 'any'     | false     | true       | false
+        domainAction | map  | className | canAccess | existClass | expectedResult
+        _            | null | _         | _         | _          | false
+        null         | [:]  | _         | _         | _          | false
+        _            | [:]  | null      | _         | _          | false
+        null         | [:]  | ''        | _         | _          | false
+        null         | [:]  | 'any'     | false     | false      | false
+        ''           | [:]  | 'any'     | false     | false      | false
+        FAKE_ACTION  | [:]  | 'any'     | false     | false      | false
+        READ_ACTION  | [:]  | 'any'     | true      | true       | true
+        READ_ACTION  | [:]  | 'any'     | true      | false      | false
+        READ_ACTION  | [:]  | 'any'     | false     | true       | false
     }
 
     def 'test execute'() {
         when:
         cmd.data = MAP
         cmd.className = NAME_CLASS
-        cmd.action = action
+        cmd.domainAction = domainAction
         def result = cmd.execute()
 
         then:
-        1 * cmd.grooscriptVertxService."${action}"(NAME_CLASS, cmd) >> RESULT
+        1 * cmd.grooscriptVertxService."${domainAction}"(NAME_CLASS, cmd) >> RESULT
         result == RESULT
 
         where:
-        action << ALL_DOMAIN_ACTIONS
+        domainAction << ALL_DOMAIN_ACTIONS
     }
 }

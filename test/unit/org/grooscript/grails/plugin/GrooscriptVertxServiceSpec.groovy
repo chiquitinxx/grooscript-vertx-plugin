@@ -58,13 +58,13 @@ class GrooscriptVertxServiceSpec extends Specification {
 
     def 'can access domain class'() {
         when:
-        def result = service.canDoActionWithDomainClass(name, action)
+        def result = service.canDoActionWithDomainClass(name, domainAction)
 
         then:
         result == expectedResult
 
         where:
-        name      | expectedResult | action
+        name      | expectedResult | domainAction
         null      | false          | CREATE_ACTION
         FAKE_NAME | false          | CREATE_ACTION
         GOOD_NAME | CAN_CREATE     | CREATE_ACTION
@@ -87,7 +87,7 @@ class GrooscriptVertxServiceSpec extends Specification {
         where:
         validationOk | executeOk | expectedSize
         true         | true      | 0
-        false        | true      | 1
+        false        | true      | 2
         true         | false     | 1
         false        | false     | 2
     }
@@ -116,13 +116,13 @@ class GrooscriptVertxServiceSpec extends Specification {
         def command = setupCommandWithDomain(CREATE_ACTION, data)
 
         when:
-        def result = service."${action}"(DomainItem.class.simpleName, command)
+        def result = service."${domainAction}"(DomainItem.class.simpleName, command)
 
         then:
         !result
 
         where:
-        action        | data
+        domainAction  | data
         CREATE_ACTION | INVALID_DOMAIN_ITEM
         CREATE_ACTION | ERROR_DOMAIN_ITEM
     }
@@ -168,7 +168,7 @@ class GrooscriptVertxServiceSpec extends Specification {
     def setupCommandWithDomain(action, data) {
         def command = Mock(ActionCommand)
         command.className >> DomainItem.class.simpleName
-        command.action >> action
+        command.domainAction >> action
         command.data >> data
         command.metaClass.setDoingActionError = { String msg ->
             println '******* '+msg

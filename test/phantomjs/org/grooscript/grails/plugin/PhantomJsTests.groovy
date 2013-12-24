@@ -38,17 +38,18 @@ class PhantomJsTests extends PhantomJsCase {
         assert $("#template1").html() != '','1->' +$ ("#template1").html() + '<'
         assert $("#template2").html() != '','2->' +$ ("#template2").html() + '<'
         assert $("#template3").html() == '','3->' +$ ("#template3").html() + '<'
-    }
+    } //TODO review fails in assert dont stop test
 
     @PhantomJsTest(url = 'http://localhost:8080/grooscript-vertx/main/vertxEvents', waitSeconds = 2)
     void testWaitSeconds() {
         assert $('#points').html() == '.',"points Html after is ${$('#points').html()}"
     }
 
-    /*void testInMainController() {
+    void testInMainController() {
         phantomJs(controller: 'main', code: '''
-            assert true
-        ''')
+            println 'New cool test!'
+            assert false
+        ''') //TODO review fails in assert dont stop test
         assert true
-    }*/
+    }
 }

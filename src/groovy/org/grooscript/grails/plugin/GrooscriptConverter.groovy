@@ -22,7 +22,7 @@ class GrooscriptConverter {
 
     @Cacheable('conversions')
     String toJavascript(String groovyCode, options = null, cleanJsCode = true) {
-        println '****************************** CONVERSION!'
+        //println '****************************** CONVERSION!'
         String jsCode = ''
         if (groovyCode) {
             GrooScript.clearAllOptions()

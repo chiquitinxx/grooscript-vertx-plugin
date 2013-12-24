@@ -81,7 +81,7 @@ grails.resources.modules = {
 }
 
 grooscript.model = [
-        [name: 'org.grooscript.domain.DomainItem', create: true, read: true, update: true, delete: { -> false}]
+        [name: 'DomainItem', create: true, read: true, update: true, delete: { -> true}]
 ]
 
 phantomjs.path = '/Applications/phantomjs'

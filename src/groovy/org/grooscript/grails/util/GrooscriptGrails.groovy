@@ -8,71 +8,69 @@ import org.grooscript.asts.GsNative
  */
 class GrooscriptGrails {
 
+    static remoteUrl
+    static controllerRemoteDomain = 'remoteDomain'
+    static actionRemoteDomain = 'doAction'
+
     @GsNative
     static sendClientMessage(String channel, message) {/*
         var sendMessage = message;
-        if (message['clazz'] == undefined) {
-            message = GrooscriptGrails.toGroovy(message);
+        if (!GrooscriptGrails.isGroovyObject(message)) {
+            sendMessage = gs.toGroovy(message);
         }
-        grooscriptEvents.sendMessage(channel, message);
+        grooscriptEvents.sendMessage(channel, sendMessage);
     */}
 
     @GsNative
     static sendServerMessage(String channel, message) {/*
         var sendMessage = message;
-        if (message['clazz'] !== undefined) {
-            message = GrooscriptGrails.toJavascript(message);
+        if (GrooscriptGrails.isGroovyObject(message)) {
+            sendMessage = gs.toJavascript(message);
         }
-        grooscriptEventBus.send(channel, message);
+        grooscriptEventBus.send(channel, sendMessage);
     */}
 
     @GsNative
-    static toJavascript(message) {/*
-        var result;
-        if (message!=null && message!=undefined && typeof(message) !== "function") {
-            if (message instanceof Array) {
-                result = [];
-                var i;
-                for (i = 0; i < message.length; i++) {
-                    result[result.length] = GrooscriptGrails.toJavascript(message[i]);
-                }
-            } else {
-                if (message instanceof Object) {
-                    result = {};
-                    for (ob in message) {
-                        if (!gs.isMapProperty(ob)) {
-                            result[ob] = GrooscriptGrails.toJavascript(message[ob]);
-                        }
-                    }
-                } else {
-                    result = message;
-                }
-            }
+    static doRemoteCall(String controller, String action, params, onSuccess, onFailure) {/*
+        var url = GrooscriptGrails.remoteUrl;
+        url = url + '/' + controller;
+        if (domainAction != null) {
+            url = url + '/' + domainAction;
         }
-        return result;
+        $.ajax({
+            type: "POST",
+            data: (GrooscriptGrails.isGroovyObject(params) ? gs.toJavascript(params) : params),
+            url: url
+        }).done(function(newData) {
+            onSuccess(newData);
+        })
+        .fail(function(error) {
+            onFailure(error);
+        });
     */}
 
     @GsNative
-    static toGroovy(message) {/*
-        var result;
-        if (message!=null && message!=undefined && typeof(message) !== "function") {
-            if (message instanceof Array) {
-                result = gs.list([]);
-                var i;
-                for (i = 0; i < message.length; i++) {
-                    result.add(GrooscriptGrails.toGroovy(message[i]));
-                }
+    static remoteDomainAction(params, onSuccess, onFailure) {/*
+        var url = GrooscriptGrails.remoteUrl + '/' + GrooscriptGrails.controllerRemoteDomain +
+            '/' + GrooscriptGrails.actionRemoteDomain;
+        $.ajax({
+            type: "POST",
+            data: (GrooscriptGrails.isGroovyObject(params) ? gs.toJavascript(params) : params),
+            url: url
+        }).done(function(newData) {
+            if (newData.result == 'OK') {
+                onSuccess(newData);
             } else {
-                if (message instanceof Object) {
-                    result = gs.map();
-                    for (ob in message) {
-                        result.add(ob, GrooscriptGrails.toGroovy(message[ob]));
-                    }
-                } else {
-                    result = message;
-                }
+                onFailure(newData.listErrors);
             }
-        }
-        return result;
+        })
+        .fail(function(error) {
+            onFailure(error);
+        });
+    */}
+
+    @GsNative
+    private static boolean isGroovyObject(objectItem) {/*
+        return objectItem['clazz'] !== undefined;
     */}
 }

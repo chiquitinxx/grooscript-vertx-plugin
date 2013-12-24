@@ -1,5 +1,6 @@
 package org.grooscript.grails.plugin
 
+import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.grooscript.GrooScript
 import static org.grooscript.grails.util.Util.*
 
@@ -10,11 +11,13 @@ class GrooScriptVertxTagLib {
     static final REQUEST_VERTX_STARTED = 'grooscriptVertxStarted'
     static final REQUEST_VERTX_NEXT_ONLOAD = 'grooscriptVertxNextOnLoad'
     static final VERTX_ONLOAD_FUNCTION_PREFIX = 'grooscriptVertxOnLoad'
+    static final REMOTE_URL_SETTED = 'grooscriptRemoteUrl'
 
     static namespace = 'grooscript'
 
     def grailsApplication
     def grooscriptConverter
+    LinkGenerator grailsLinkGenerator
 
     def getNextVertxOnLoadEvent() {
         def value = request.getAttribute(REQUEST_VERTX_NEXT_ONLOAD)
@@ -138,7 +141,7 @@ class GrooScriptVertxTagLib {
             String jsCode = grooscriptConverter.toJavascript("Builder.process { -> ${script}}").trim()
 
             r.require(module: 'grooscript')
-            r.require(module: 'grooscriptGrails')
+            initGrooscriptGrails()
 
             processTemplateEvents(attrs.listenEvents, functionName)
 
@@ -176,14 +179,8 @@ class GrooScriptVertxTagLib {
      * domainClass - REQUIRED name of the model class
      */
     def model = { attrs ->
-        if (!attrs.domainClass || !(attrs.domainClass instanceof String)) {
-            log.error "GrooScriptVertxTagLib.model: have to define domainClass property as a String"
-        } else {
-            if (existDomainClass(attrs.domainClass)) {
-                r.require(module: 'domainClasses')
-            } else {
-                log.error "Not exist domain class ${attrs.domainClass}"
-            }
+        if (validDomainClassName(attrs.domainClass)) {
+            r.require(module: 'domainClasses')
         }
     }
 
@@ -236,6 +233,7 @@ class GrooScriptVertxTagLib {
         String name = attrs.name
         if (name) {
             r.require(module: 'clientEvents')
+            initGrooscriptGrails()
 
             r.script() {
                 def script = body()
@@ -260,11 +258,11 @@ class GrooScriptVertxTagLib {
             String name = attrs.name
             if (name) {
                 initVertx()
-                r.require(module: 'grooscriptGrails')
+                initGrooscriptGrails()
 
                 r.script() {
                     def script = body()
-                    String jsCode = grooscriptConverter.toJavascript("{ message -> message = GrooscriptGrails.toGroovy(message);${script}}").trim()
+                    String jsCode = grooscriptConverter.toJavascript("{ message -> message = gs.toGroovy(message);${script}}").trim()
                     jsCode = removeLastSemicolon(jsCode)
 
                     out << "\nfunction ${nextVertxOnLoadFunctionName}() {\n    ${EVENTBUS_JS_NAME}"+
@@ -284,7 +282,7 @@ class GrooScriptVertxTagLib {
         if (applicationContext.containsBean(VERTX_EVENTBUS_BEAN)) {
 
             initVertx()
-            r.require(module: 'grooscriptGrails')
+            initGrooscriptGrails()
 
             r.script() {
                 def script = body()
@@ -298,11 +296,48 @@ class GrooScriptVertxTagLib {
         }
     }
 
+    /**
+     * grooscript:remoteModel
+     * domainClass - REQUIRED name of the model class
+     */
+    def remoteModel = { attrs ->
+        if (validDomainClassName(attrs.domainClass)) {
+            r.require(module: 'domainClasses')
+            initGrooscriptGrails()
+        }
+    }
+
     private removeLastSemicolon(String code) {
         if (code.lastIndexOf(';') >= 0) {
             return code.substring(0, code.lastIndexOf(';'))
         } else {
             return code
+        }
+    }
+
+    private validDomainClassName(String name) {
+        if (!name || !(name instanceof String)) {
+            log.error "GrooScriptVertxTagLib.model: have to define domainClass property as a String"
+        } else {
+            if (existDomainClass(name)) {
+                return true
+            } else {
+                log.error "Not exist domain class ${name}"
+            }
+        }
+        return false
+    }
+
+    private initGrooscriptGrails() {
+        def urlSetted = request.getAttribute(REMOTE_URL_SETTED)
+        if (!urlSetted) {
+            r.require(module: 'grooscriptGrails')
+            r.script() {
+                out << '$(document).ready(function() {\n'
+                out << "  GrooscriptGrails.remoteUrl = '${grailsLinkGenerator.serverBaseURL}';\n"
+                out << '});\n'
+            }
+            request.setAttribute(REMOTE_URL_SETTED, true)
         }
     }
 }

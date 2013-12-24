@@ -96,7 +96,7 @@ class GrooScriptVertxTagLibSpec extends Specification {
         def result = applyTemplate("<grooscript:template>assert true</grooscript:template>")
 
         then:
-        1 * resourceTaglib.script(_)
+        2 * resourceTaglib.script(_)
         1 * resourceTaglib.require([module: 'grooscript'])
         1 * resourceTaglib.require([module: 'grooscriptGrails'])
         1 * grooscriptConverter.toJavascript('Builder.process { -> assert true}') >> ''
@@ -110,7 +110,7 @@ class GrooScriptVertxTagLibSpec extends Specification {
                 " itemSelector='#anyId' renderOnReady=\"${true}\">assert true</grooscript:template>")
 
         then:
-        1 * resourceTaglib.script(_)
+        2 * resourceTaglib.script(_)
         1 * grooscriptConverter.toJavascript(_) >> ''
         2 * resourceTaglib.require(_)
         0 * _
@@ -124,7 +124,7 @@ class GrooScriptVertxTagLibSpec extends Specification {
         def result = applyTemplate("<grooscript:template filePath='${FILE_PATH_TEMPLATE}'/>")
 
         then:
-        1 * resourceTaglib.script(_)
+        2 * resourceTaglib.script(_)
         1 * grooscriptConverter.toJavascript("Builder.process { -> ${new File(FILE_PATH_TEMPLATE).text}}") >> ''
         2 * resourceTaglib.require(_)
         0 * _
@@ -137,7 +137,7 @@ class GrooScriptVertxTagLibSpec extends Specification {
                 [events: ['redraw']])
 
         then:
-        2 * resourceTaglib.script(_)
+        3 * resourceTaglib.script(_)
         2 * resourceTaglib.require(_)
         1 * grooscriptConverter.toJavascript(_) >> ''
         1 * resourceTaglib.require([module: 'clientEvents'])
@@ -176,8 +176,9 @@ class GrooScriptVertxTagLibSpec extends Specification {
         applyTemplate("<grooscript:onEvent name='nameEvent'>assert true</grooscript:onEvent>")
 
         then:
-        1 * resourceTaglib.script(_)
+        2 * resourceTaglib.script(_)
         1 * resourceTaglib.require([module: 'clientEvents'])
+        1 * resourceTaglib.require([module: 'grooscriptGrails'])
         0 * _
     }
 
@@ -189,7 +190,7 @@ class GrooScriptVertxTagLibSpec extends Specification {
         applyTemplate("<grooscript:onServerEvent name='nameEvent'>assert true</grooscript:onServerEvent>")
 
         then:
-        2 * resourceTaglib.script(_)
+        3 * resourceTaglib.script(_)
         1 * resourceTaglib.require([module: 'grooscriptGrails'])
         1 * resourceTaglib.require([module: 'vertx'])
         0 * _
@@ -203,7 +204,7 @@ class GrooScriptVertxTagLibSpec extends Specification {
         applyTemplate("<grooscript:onVertxStarted>assert true</grooscript:onVertxStarted>")
 
         then:
-        2 * resourceTaglib.script(_)
+        3 * resourceTaglib.script(_)
         1 * resourceTaglib.require([module: 'grooscriptGrails'])
         1 * resourceTaglib.require([module: 'vertx'])
         0 * _

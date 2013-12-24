@@ -50,16 +50,20 @@ class GrooscriptVertxService {
     List getErrorsForClient(command, boolean validationOk, boolean executeOk) {
         def result = []
         if (!validationOk) {
+            result.add 'Error validation in '+command.domainAction+' '+command.className
             result.addAll command.errors
-        }
-        if (!executeOk) {
-            result.add "Error doing action ${command.action}: ${command.doingActionError}"
+        } else {
+            if (!executeOk) {
+                result.add "Error doing domainAction ${command.domainAction}: ${command.doingActionError}"
+            }
         }
         result
     }
 
     private getDomainClass(String nameClass) {
-        grailsApplication.domainClasses.find { it.shortName == nameClass }
+        grailsApplication.domainClasses.find {
+            it.shortName == nameClass
+        }
     }
 
     class Actions {
@@ -74,6 +78,9 @@ class GrooscriptVertxService {
                     item."${key}" = value
                 }
         }
+        def passItemToMap(item, map) {
+            map.id = item.id
+        }
         def validateAndSave(item) {
             if (!item.validate()) {
                 actionCommand.doingActionError =
@@ -84,7 +91,7 @@ class GrooscriptVertxService {
             }
         }
         def getItemById() {
-            domainClass?.get(actionCommand?.data?.id)
+            domainClass?.referenceInstance.get(actionCommand?.data?.id as Long)
         }
         def deleteItem(item) {
             try {
@@ -128,6 +135,7 @@ class GrooscriptVertxService {
             if (item) {
                 passParametersToItem(item)
                 validateAndSave(item)
+                passItemToMap(item, actionCommand.data)
             }
         }
     }
@@ -147,7 +155,7 @@ class GrooscriptVertxService {
                 validateAndSave(item)
             } else {
                 actionCommand.doingActionError =
-                    "Don't find ${domainClassName} with id:${actionCommand?.data?.id}"
+                    "Updating don't find ${domainClassName} with id:${actionCommand?.data?.id}"
             }
         }
     }
@@ -158,6 +166,9 @@ class GrooscriptVertxService {
             def item = getItemById()
             if (item) {
                 deleteItem(item)
+            } else {
+                actionCommand.doingActionError =
+                        "Deleting don't find ${domainClassName} with id:${actionCommand?.data?.id}"
             }
         }
     }
