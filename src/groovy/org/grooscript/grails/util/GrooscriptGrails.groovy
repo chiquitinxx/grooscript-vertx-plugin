@@ -12,7 +12,10 @@ class GrooscriptGrails {
     static controllerRemoteDomain = 'remoteDomain'
     static actionRemoteDomain = 'doAction'
 
-    static final GRAILS_PROPERTIES = ['classNameWithoutPackage', 'class']
+    static final GRAILS_PROPERTIES = ['classNameWithoutPackage', 'class',
+        'transients', 'constraints', 'mapping', 'hasMany', 'belongsTo', 'validationSkipMap',
+        'gormPersistentEntity', 'properties', 'gormDynamicFinders', 'all', 'domainClass', 'attached',
+        'validationErrorsMap', 'dirtyPropertyNames', 'errors', 'dirty', 'count']
 
     static getRemoteDomainClassProperties(remoteDomainClass) {
         return remoteDomainClass.metaClass.properties.inject([:]) { acc, property ->
