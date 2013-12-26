@@ -10,9 +10,10 @@ class GrooscriptVertxService {
 
     static final CREATE_ACTION = 'create'
     static final READ_ACTION = 'read'
+    static final LIST_ACTION = 'list'
     static final UPDATE_ACTION = 'update'
     static final DELETE_ACTION = 'delete'
-    static final ALL_DOMAIN_ACTIONS = [CREATE_ACTION, READ_ACTION, UPDATE_ACTION, DELETE_ACTION]
+    static final ALL_DOMAIN_ACTIONS = [CREATE_ACTION, LIST_ACTION, READ_ACTION, UPDATE_ACTION, DELETE_ACTION]
 
     private static final NOT_ALLOWED_PROPERTIES = ['id', 'version']
 
@@ -80,6 +81,7 @@ class GrooscriptVertxService {
         }
         def passItemToMap(item, map) {
             map.id = item.id
+            map.version = item.version
         }
         def validateAndSave(item) {
             if (!item.validate()) {
@@ -140,6 +142,12 @@ class GrooscriptVertxService {
         }
     }
 
+    def list(String domainClassName, ActionCommand actionCommand) {
+        validateAction(domainClassName, actionCommand) {
+            result = domainClass?.referenceInstance?.list(actionCommand.data ?: [:])
+        }
+    }
+
     def read(String domainClassName, ActionCommand actionCommand) {
         validateAction(domainClassName, actionCommand) {
             result = getItemById()
@@ -153,6 +161,7 @@ class GrooscriptVertxService {
             if (item) {
                 passParametersToItem(item)
                 validateAndSave(item)
+                passItemToMap(item, actionCommand.data)
             } else {
                 actionCommand.doingActionError =
                     "Updating don't find ${domainClassName} with id:${actionCommand?.data?.id}"

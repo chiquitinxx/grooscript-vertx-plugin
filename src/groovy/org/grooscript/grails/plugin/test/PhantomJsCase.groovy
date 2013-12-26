@@ -21,6 +21,7 @@ class PhantomJsCase extends GroovyTestCase {
         if (params.controller && params.code) {
             def url
             if (!grailsLinkGenerator.getContextPath()) {
+                //For this plugin tests
                 url = grailsLinkGenerator.getServerBaseURL() + '/grooscript-vertx/' + params.controller +
                         (params.domainAction ? "/${params.domainAction}" : '')
             } else {

@@ -13,6 +13,7 @@ class RemoteDomainControllerSpec extends Specification {
 
     private static final DATA = ['hello':'hello']
     private static final ERRORS = ['error 1']
+    private static final CLASS_NAME = 'className'
 
     def setup() {
         controller.grooscriptVertxService = Mock(GrooscriptVertxService)
@@ -26,6 +27,7 @@ class RemoteDomainControllerSpec extends Specification {
         given:
         def command = Mock(ActionCommand)
         command.data >> DATA
+        command.className >> CLASS_NAME
 
         when:
         controller.doAction(command)
@@ -36,6 +38,7 @@ class RemoteDomainControllerSpec extends Specification {
         _ * command.execute() >> resultExecute
         response.json.result == expectedResult
         response.json.data == DATA
+        response.json.className == CLASS_NAME
         response.json.listErrors == ERRORS
 
         where:

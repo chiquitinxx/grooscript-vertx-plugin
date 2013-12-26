@@ -22,6 +22,7 @@ class GrooscriptVertxServiceSpec extends Specification {
     static final UPDATED_NAME = 'UpdaItem'
     static final CAN_CREATE = true
     static final CAN_READ = false
+    static final CAN_LIST = false
     static final CAN_UPDATE = { -> true}
     static final CAN_DELETE = { -> false}
 
@@ -35,7 +36,8 @@ class GrooscriptVertxServiceSpec extends Specification {
             name == GOOD_NAME
         }
         grailsApplication.config = [grooscript:[model:[
-                [name: GOOD_NAME, create: CAN_CREATE, read: CAN_READ, update: CAN_UPDATE, delete: CAN_DELETE]
+                [name: GOOD_NAME, create: CAN_CREATE, read: CAN_READ,
+                        list: CAN_LIST, update: CAN_UPDATE, delete: CAN_DELETE]
         ]]]
 	}
 
@@ -72,12 +74,13 @@ class GrooscriptVertxServiceSpec extends Specification {
         FAKE_NAME | false          | CREATE_ACTION
         GOOD_NAME | CAN_CREATE     | CREATE_ACTION
         GOOD_NAME | CAN_READ       | READ_ACTION
+        GOOD_NAME | CAN_LIST       | LIST_ACTION
         GOOD_NAME | CAN_UPDATE()   | UPDATE_ACTION
         GOOD_NAME | CAN_DELETE()   | DELETE_ACTION
     }
 
     @Unroll
-    def 'error for client'() {
+    def 'error from client'() {
         given:
         def command = Mock(ActionCommand)
         command.errors >> Mock(Errors)
@@ -168,6 +171,18 @@ class GrooscriptVertxServiceSpec extends Specification {
 
         then:
         result == DomainItem.list().first()
+    }
+
+    def 'success list a domain class'() {
+        given:
+        insertDomainClass()
+
+        when:
+        def command = setupCommandWithDomain(LIST_ACTION, VALID_DOMAIN_ITEM_UPDATE)
+        def result = service.list(command.className, command)
+
+        then:
+        result == DomainItem.list()
     }
 
     def setupCommandWithDomain(action, data) {
