@@ -1,5 +1,6 @@
 package org.grooscript.grails.plugin.promise
 
+import org.grooscript.grails.plugin.GrooscriptVertxService
 import org.grooscript.grails.util.GrooscriptGrails
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -9,22 +10,25 @@ import spock.lang.Unroll
  */
 class RemotePromiseSpec extends Specification {
 
+    private static final SUCCESS_ACTION = { -> 'ok' }
+    private static final FAILURE_ACTION = { -> 'ko' }
+
     @Unroll
     def 'remote promise test'() {
         given:
         GroovySpy(GrooscriptGrails, global: true)
         def data = [:]
         def className = 'ClassName'
-        def domainAction = 'create'
         def promise = new RemotePromise(domainAction: domainAction, className: className, data: data)
-        def onSuccess = { -> result = 'ok'}
-        def onFailure = { -> result = 'ko'}
 
         when:
-        promise.then(onSuccess, onFailure)
+        promise.then(SUCCESS_ACTION, FAILURE_ACTION)
 
         then:
         1 * GrooscriptGrails.remoteDomainAction([domainAction: domainAction, className: className, data: data],
-                onSuccess, onFailure)
+                SUCCESS_ACTION, FAILURE_ACTION)
+
+        where:
+        domainAction << GrooscriptVertxService.ALL_DOMAIN_ACTIONS
     }
 }

@@ -34,7 +34,9 @@ class RemoteDomainClassImpl  implements ASTTransformation {
             addInstanceProperties(classNode)
 
             addSaveMethod(classNode)
+            addDeleteMethod(classNode)
             addStaticGetMethod(classNode)
+            addStaticListMethod(classNode)
         } catch(e) {
             println 'RemoteDomainClassImpl Exception:'+ e.message
         }
@@ -57,6 +59,16 @@ class RemoteDomainClassImpl  implements ASTTransformation {
         }[0])
     }
 
+    private addStaticListMethod(ClassNode classNode) {
+        def params = new Parameter[1]
+        params[0] = new Parameter(new ClassNode(HashMap), 'params')
+        classNode.addMethod('list', Modifier.STATIC, new ClassNode(RemotePromise), params,
+                ClassNode.EMPTY_ARRAY, new AstBuilder().buildFromCode {
+            return new org.grooscript.grails.plugin.promise.RemotePromise(domainAction: 'list',
+                    className: this.classNameWithoutPackage, data: params ?: [:])
+        }[0])
+    }
+
     private addSaveMethod(ClassNode classNode) {
         classNode.addMethod('save', Modifier.PUBLIC, new ClassNode(RemotePromise), Parameter.EMPTY_ARRAY,
                 ClassNode.EMPTY_ARRAY, new AstBuilder().buildFromCode {
@@ -65,6 +77,15 @@ class RemoteDomainClassImpl  implements ASTTransformation {
             return new org.grooscript.grails.plugin.promise.RemotePromise(domainAction: action,
                     className: this.classNameWithoutPackage,
                     data: data)
+        }[0])
+    }
+
+    private addDeleteMethod(ClassNode classNode) {
+        classNode.addMethod('delete', Modifier.PUBLIC, new ClassNode(RemotePromise), Parameter.EMPTY_ARRAY,
+                ClassNode.EMPTY_ARRAY, new AstBuilder().buildFromCode {
+            return new org.grooscript.grails.plugin.promise.RemotePromise(domainAction: 'delete',
+                    className: this.classNameWithoutPackage,
+                    data: [id: this.id])
         }[0])
     }
 }

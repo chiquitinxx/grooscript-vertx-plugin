@@ -12,8 +12,10 @@ import java.lang.reflect.Method
  */
 class RemoteDomainClassSpec extends Specification {
 
-    private static final ON_ACTION = { -> }
+    private static final SUCCESS_ACTION = { -> 'ok' }
+    private static final FAILURE_ACTION = { -> 'ko' }
     private static final NAME = 'name'
+    private static final DOMAIN_CLASS_NAME = 'RemoteItem'
 
     def 'initial properties of remote domain class'() {
         given:
@@ -21,7 +23,7 @@ class RemoteDomainClassSpec extends Specification {
 
         expect:
         remoteItem.name == null
-        remoteItem.classNameWithoutPackage == 'RemoteItem'
+        remoteItem.classNameWithoutPackage == DOMAIN_CLASS_NAME
         remoteItem.id == null
         remoteItem.version == 0
     }
@@ -33,12 +35,29 @@ class RemoteDomainClassSpec extends Specification {
 
         when:
         remoteItem.name = NAME
-        remoteItem.save().then(ON_ACTION, ON_ACTION)
+        remoteItem.save().then(SUCCESS_ACTION, FAILURE_ACTION)
 
         then:
         1 * GrooscriptGrails.remoteDomainAction(
-                [domainAction: 'create', className: 'RemoteItem', data: [id: null, name: NAME, version: 0]],
-                ON_ACTION, ON_ACTION)
+                [domainAction: 'create', className: DOMAIN_CLASS_NAME, data: [id: null, name: NAME, version: 0]],
+                SUCCESS_ACTION, FAILURE_ACTION)
+    }
+
+    def 'update a remote domain class'() {
+        given:
+        GroovySpy(GrooscriptGrails, global: true)
+        def remoteItem = remoteDomainClassInstance
+
+        when:
+        remoteItem.id = 5
+        remoteItem.version = 1
+        remoteItem.name = NAME
+        remoteItem.save().then(SUCCESS_ACTION, FAILURE_ACTION)
+
+        then:
+        1 * GrooscriptGrails.remoteDomainAction(
+                [domainAction: 'update', className: DOMAIN_CLASS_NAME, data: [id: 5, name: NAME, version: 1]],
+                SUCCESS_ACTION, FAILURE_ACTION)
     }
 
     def 'get remote domain class'() {
@@ -47,17 +66,44 @@ class RemoteDomainClassSpec extends Specification {
         def remoteItem = remoteDomainClassInstance
 
         when:
-        remoteItem.get(1).then(ON_ACTION, ON_ACTION)
+        remoteItem.get(1).then(SUCCESS_ACTION, FAILURE_ACTION)
 
         then:
         1 * GrooscriptGrails.remoteDomainAction(
-                [domainAction: 'read', className: 'RemoteItem', data: [id: 1]], ON_ACTION, ON_ACTION)
+                [domainAction: 'read', className: DOMAIN_CLASS_NAME, data: [id: 1]], SUCCESS_ACTION, FAILURE_ACTION)
+    }
+
+    def 'list remote domain class'() {
+        given:
+        GroovySpy(GrooscriptGrails, global: true)
+        def remoteItem = remoteDomainClassInstance
+
+        when:
+        remoteItem.list().then(SUCCESS_ACTION, FAILURE_ACTION)
+
+        then:
+        1 * GrooscriptGrails.remoteDomainAction(
+                [domainAction: 'list', className: DOMAIN_CLASS_NAME, data: [:]], SUCCESS_ACTION, FAILURE_ACTION)
+    }
+
+    def 'delete remote domain class'() {
+        given:
+        GroovySpy(GrooscriptGrails, global: true)
+        def remoteItem = remoteDomainClassInstance
+
+        when:
+        remoteItem.id = 2
+        remoteItem.delete().then(SUCCESS_ACTION, FAILURE_ACTION)
+
+        then:
+        1 * GrooscriptGrails.remoteDomainAction(
+                [domainAction: 'delete', className: DOMAIN_CLASS_NAME, data: [id: 2]], SUCCESS_ACTION, FAILURE_ACTION)
     }
 
     private getRemoteDomainClassInstance() {
         GroovyClassLoader invoker = new GroovyClassLoader()
         def clazz = invoker.parseClass('@org.grooscript.grails.plugin.remote.RemoteDomainClass ' +
-                'class RemoteItem { String name }')
+                "class ${DOMAIN_CLASS_NAME} { String name }")
         clazz.newInstance()
     }
 }
