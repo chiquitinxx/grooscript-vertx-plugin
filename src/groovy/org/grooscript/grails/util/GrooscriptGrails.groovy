@@ -12,6 +12,17 @@ class GrooscriptGrails {
     static controllerRemoteDomain = 'remoteDomain'
     static actionRemoteDomain = 'doAction'
 
+    static final GRAILS_PROPERTIES = ['classNameWithoutPackage', 'class']
+
+    static getRemoteDomainClassProperties(remoteDomainClass) {
+        return remoteDomainClass.metaClass.properties.inject([:]) { acc, property ->
+            if (!(property.name in GrooscriptGrails.GRAILS_PROPERTIES)) {
+                acc[property.name] = remoteDomainClass."${property.name}"
+            }
+            return acc
+        }
+    }
+
     @GsNative
     static sendClientMessage(String channel, message) {/*
         var sendMessage = message;
