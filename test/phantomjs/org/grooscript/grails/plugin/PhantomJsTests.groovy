@@ -52,4 +52,10 @@ class PhantomJsTests extends PhantomJsCase {
         ''') //TODO review fails in assert dont stop test
         assert true
     }
+
+    @PhantomJsTest(url = 'http://localhost:8080/grooscript-vertx/main/localEvents', waitSeconds = 3)
+    void testLocalEventsWithRemoteDomainClass() {
+        assert $('#console').html() == '<p>Added a new Item!</p><p>Get item with id 1</p>' +
+                '<p>Update item!</p><p>Item deleted!</p>',"console Html is >${$('#console').html()}<"
+    }
 }
