@@ -4,6 +4,7 @@ import grails.test.mixin.TestMixin
 import grails.test.mixin.web.ControllerUnitTestMixin
 import org.grooscript.grails.plugin.GrooscriptVertxService
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import static org.grooscript.grails.plugin.GrooscriptVertxService.*
 /**
@@ -25,6 +26,7 @@ class ActionCommandSpec extends Specification {
         cmd.grooscriptVertxService = Mock(GrooscriptVertxService)
     }
 
+    @Unroll
     def 'test validate'() {
         when:
         cmd.data = map
@@ -51,6 +53,7 @@ class ActionCommandSpec extends Specification {
         READ_ACTION  | [:]  | 'any'     | false     | true       | false
     }
 
+    @Unroll
     def 'test execute'() {
         when:
         cmd.data = MAP

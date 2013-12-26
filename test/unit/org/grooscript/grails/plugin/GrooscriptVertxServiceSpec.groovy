@@ -6,6 +6,7 @@ import org.grooscript.domain.DomainItem
 import org.grooscript.grails.ActionCommand
 import org.springframework.validation.Errors
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import static org.grooscript.grails.plugin.GrooscriptVertxService.*
 
@@ -41,6 +42,7 @@ class GrooscriptVertxServiceSpec extends Specification {
 	def cleanup() {
 	}
 
+    @Unroll
 	def 'exist domain class'() {
         when:
         def result = service.existDomainClass(name)
@@ -56,6 +58,7 @@ class GrooscriptVertxServiceSpec extends Specification {
         GOOD_NAME | true
 	}
 
+    @Unroll
     def 'can access domain class'() {
         when:
         def result = service.canDoActionWithDomainClass(name, domainAction)
@@ -73,6 +76,7 @@ class GrooscriptVertxServiceSpec extends Specification {
         GOOD_NAME | CAN_DELETE()   | DELETE_ACTION
     }
 
+    @Unroll
     def 'error for client'() {
         given:
         def command = Mock(ActionCommand)
@@ -111,6 +115,7 @@ class GrooscriptVertxServiceSpec extends Specification {
         DomainItem.list().first().name == VALID_DOMAIN_ITEM.name
     }
 
+    @Unroll
     def 'error create and updating a domain class'() {
         given:
         def command = setupCommandWithDomain(CREATE_ACTION, data)
