@@ -1,6 +1,5 @@
 package org.grooscript.grails.util
 
-import org.grooscript.grails.plugin.domain.DomainClass
 import spock.lang.Specification
 
 /**
@@ -57,35 +56,6 @@ class BuilderSpec extends Specification {
 
         expect:
         result.html == "<body><ul><li>item: myDomainClass</li></ul></body>"
-    }
-
-    @DomainClass
-    class MyClass {
-        String name
-    }
-
-    void 'works with a domain class'() {
-        given:
-
-        def result = Builder.process {
-
-            def NAME = 'George'
-            def myClass = new MyClass(name: NAME)
-            myClass.save()
-
-            body {
-                ul {
-                    MyClass.list().each { myItem ->
-                        li(class: 'myClass') {
-                            t 'item: '+ myItem.name
-                        }
-                    }
-                }
-            }
-        }
-
-        expect:
-        result.html == "<body><ul><li class='myClass'>item: George</li></ul></body>"
     }
 
     def 'works basic stuff'() {
