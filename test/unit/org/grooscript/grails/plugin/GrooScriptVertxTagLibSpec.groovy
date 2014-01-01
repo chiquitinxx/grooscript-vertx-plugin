@@ -5,6 +5,7 @@ import grails.test.mixin.TestMixin
 import grails.test.mixin.support.GrailsUnitTestMixin
 import org.grails.plugin.resource.ResourceTagLib
 import spock.lang.Specification
+import spock.lang.Unroll
 
 /**
  * @author Jorge Franco
@@ -146,7 +147,9 @@ class GrooScriptVertxTagLibSpec extends Specification {
 
     static final FAKE_NAME = 'FAKE'
     static final DOMAIN_CLASS_NAME = 'correctDomainClass'
+    static final DOMAIN_CLASS_NAME_WITH_PACKAGE = 'org.grooscript.correctDomainClass'
 
+    @Unroll
     void 'test model with domain class'() {
         given:
         GrooScriptVertxTagLib.metaClass.existDomainClass = { String name ->
@@ -157,12 +160,40 @@ class GrooScriptVertxTagLibSpec extends Specification {
         applyTemplate("<grooscript:model domainClass='${domainClassName}'/>")
 
         then:
-        numberTimes * resourceTaglib.require([module: 'domainClasses'])
+        numberTimes * resourceTaglib.require([module: 'grooscript'])
+        numberTimes * resourceTaglib.external(['uri':"/js/domain/${DOMAIN_CLASS_NAME}.js"])
+        numberTimes * grooscriptConverter.convertDomainClass(domainClassName)
+        0 * _
 
         where:
-        domainClassName   | numberTimes
-        FAKE_NAME         | 0
-        DOMAIN_CLASS_NAME | 1
+        domainClassName                | numberTimes
+        FAKE_NAME                      | 0
+        DOMAIN_CLASS_NAME              | 1
+        DOMAIN_CLASS_NAME_WITH_PACKAGE | 1
+    }
+
+    @Unroll
+    void 'test remote model with domain class'() {
+        given:
+        GrooScriptVertxTagLib.metaClass.existDomainClass = { String name ->
+            name != FAKE_NAME
+        }
+
+        when:
+        applyTemplate("<grooscript:remoteModel domainClass='${domainClassName}'/>")
+
+        then:
+        numberTimes * resourceTaglib.require([module: 'grooscriptGrails'])
+        numberTimes * resourceTaglib.script(_)
+        numberTimes * resourceTaglib.external([uri: "/js/remote/${DOMAIN_CLASS_NAME}.js"])
+        numberTimes * grooscriptConverter.convertDomainClass(domainClassName, true)
+        0 * _
+
+        where:
+        domainClassName                | numberTimes
+        FAKE_NAME                      | 0
+        DOMAIN_CLASS_NAME              | 1
+        DOMAIN_CLASS_NAME_WITH_PACKAGE | 1
     }
 
     private initVertx() {

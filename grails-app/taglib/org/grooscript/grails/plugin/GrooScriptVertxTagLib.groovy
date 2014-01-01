@@ -180,49 +180,14 @@ class GrooScriptVertxTagLib {
      */
     def model = { attrs ->
         if (validDomainClassName(attrs.domainClass)) {
-            r.require(module: 'domainClasses')
+            grooscriptConverter.convertDomainClass(attrs.domainClass)
+            r.require(module: 'grooscript')
+            out << r.external(uri: "/js/${DOMAIN_NAME}/${shortDomainClassName(attrs.domainClass)}.js")
         }
     }
 
     private existDomainClass(String nameClass) {
-        grailsApplication.domainClasses.find { it.fullName == nameClass }
-    }
-
-    /**
-     * Do a manual domainClasses generation
-     * @param domainClass
-     */
-    def prepareDomainClassJsFile(String domainClass) {
-        try {
-            GrooScript.clearAllOptions()
-            GrooScript.setConversionProperty('customization', {
-                ast(org.grooscript.asts.DomainClass)
-            })
-            GrooScript.setConversionProperty('classPath',['src/groovy'])
-            File domainFile = getDomainFile(domainClass)
-            if (domainFile) {
-                try {
-                    GrooScript.convert(domainFile.path, DOMAIN_JS_DIR)
-                } catch (e) {
-                    consoleError 'GrooScriptVertxTagLib Error converting ' + e.message
-                }
-            } else {
-                consoleError 'GrooScriptVertxTagLib Error finding domain class ' + domainClass.name
-            }
-            GrooScript.clearAllOptions()
-        } catch (e) {
-            consoleError 'GrooScriptVertxTagLib Error creating domain class js file ' + e.message
-        }
-    }
-
-    private getPathFromClassName(String className) {
-        "${className.replaceAll(/\./,SEP)}.groovy"
-    }
-
-    private File getDomainFile(String domainClass) {
-        def nameFile = "${DOMAIN_DIR}${SEP}${getPathFromClassName(domainClass)}"
-        //println 'DOMAIN CLASS FILE: ' + nameFile
-        new File(nameFile)
+        grailsApplication.domainClasses.find { it.fullName == nameClass || it.name == nameClass }
     }
 
     /**
@@ -302,8 +267,9 @@ class GrooScriptVertxTagLib {
      */
     def remoteModel = { attrs ->
         if (validDomainClassName(attrs.domainClass)) {
-            r.require(module: 'domainClasses')
             initGrooscriptGrails()
+            grooscriptConverter.convertDomainClass(attrs.domainClass, true)
+            out << r.external(uri: "/js/${REMOTE_NAME}/${shortDomainClassName(attrs.domainClass)}.js")
         }
     }
 
@@ -338,6 +304,15 @@ class GrooScriptVertxTagLib {
                 out << '});\n'
             }
             request.setAttribute(REMOTE_URL_SETTED, true)
+        }
+    }
+
+    private shortDomainClassName(String domainClassName) {
+        def pos = domainClassName.lastIndexOf('.')
+        if (pos) {
+            return domainClassName.substring(pos + 1)
+        } else {
+            return domainClassName
         }
     }
 }

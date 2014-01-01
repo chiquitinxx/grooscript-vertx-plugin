@@ -23,6 +23,7 @@ class GrooscriptVertxGrailsPlugin {
         "web-app/js/Message.js",
         "web-app/js/domainClasses.js",
         "web-app/js/testWithNode.js",
+        "web-app/js/remote/**",
         "web-app/js/domain/**"
     ]
 
@@ -53,11 +54,11 @@ Also use Vert.x to use events between server and gsps.
     def scm = [ url: "http://github.com/chiquitinxx/grooscript-vertx-plugin/" ]
 
     def doWithWebDescriptor = { xml ->
+        //Convert all files to javascript again
     }
 
     static final GROOVY_VERSION_MODEL_REQUIRED = '2.1.0'
     static final JAVA_VERSION_VERTX_REQUIRED = '1.7'
-
 
     def doWithSpring = {
 
@@ -90,7 +91,7 @@ Also use Vert.x to use events between server and gsps.
         }
     }
 
-    def initGrooScriptDaemon(application) {
+    def initGrooscriptDaemon(application) {
 
         if (Environment.current == Environment.DEVELOPMENT) {
 
@@ -142,9 +143,7 @@ Also use Vert.x to use events between server and gsps.
 
         if (Environment.current == Environment.DEVELOPMENT) {
             launchFileChangesListener(application, doAfter)
-            if (application.mainContext.grooscriptConverter.canConvertModel && application.config.grooscript?.model) {
-                //launchDomainFileChangesListener(application)
-            } else {
+            if (!application.mainContext.grooscriptConverter.canConvertModel) {
                 consoleWarning "You need at least Groovy ${GROOVY_VERSION_MODEL_REQUIRED} to work with the model."
             }
         }
@@ -172,50 +171,8 @@ Also use Vert.x to use events between server and gsps.
         }
     }
 
-    private launchDomainFileChangesListener(application) {
-
-        if (application.config.grooscript?.model) {
-            def listModelFiles = application.config.grooscript?.model
-            //println '1-'+listModelFiles
-            if (listModelFiles && listModelFiles instanceof List) {
-                new File(DOMAIN_JS_DIR).mkdirs()
-                ListenerFileChangesDaemon listener = new ListenerFileChangesDaemon(notifyAllChanges: true)
-                listener.sourceList = listModelFiles.inject ([]) { listNames, domainItem ->
-                    listNames << "${DOMAIN_DIR}${SEP}${domainItem.name.replaceAll(/\./,SEP)}.groovy"
-                    listNames
-                }
-                consoleMessage('Listen domain classes: '+listener.sourceList)
-                listener.nameListener = 'DOMAIN_CLASSES'
-                listener.doAfter = { list ->
-                    if (list) {
-                        list.each { String absolutePath ->
-                            GrooScript.clearAllOptions()
-                            GrooScript.setConversionProperty('customization', {
-                                ast(org.grooscript.asts.DomainClass)
-                            })
-                            GrooScript.setConversionProperty('classPath',[GROOVY_DIR, DOMAIN_DIR])
-                            try {
-                                GrooScript.convert(absolutePath, DOMAIN_JS_DIR)
-                                consoleMessage("Converted domain class: $absolutePath")
-                            } catch (e) {
-                                consoleError("Error converting $absolutePath: ${e.message}")
-                            }
-                            GrooScript.clearAllOptions()
-                        }
-                        GrooScript.joinFiles(DOMAIN_JS_DIR, DOMAIN_CLASSES_JS_FILE)
-                        if (list.size() != listModelFiles.size()) {
-                            sendReloadNotificationIfNeeded()
-                        }
-                    }
-                }
-                listener.start()
-                application.mainContext.grooscriptConverter.modelChangesListener = listener
-            }
-        }
-    }
-
     def doWithApplicationContext = { applicationContext ->
-        initGrooScriptDaemon(application)
+        initGrooscriptDaemon(application)
         if (applicationContext.eventBus && application.config.vertx?.testing) {
             applicationContext.eventBus.onEvent('testing', { message ->
                 if (message) {
@@ -242,7 +199,7 @@ Also use Vert.x to use events between server and gsps.
         if (applicationContext.eventBus) {
             applicationContext.eventBus.stopListeners()
         }
-        initGrooScriptDaemon(application)
+        initGrooscriptDaemon(application)
     }
 
     def onShutdown = { event ->

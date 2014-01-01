@@ -26,10 +26,7 @@
         }
     </grooscript:template>
 
-    <grooscript:model domainClass='org.grooscript.domain.DomainItem'/>
-
     <r:script>
-        var a = DomainItem();
         var numberTimes = 0;
     </r:script>
 

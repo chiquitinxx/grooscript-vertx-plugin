@@ -2,7 +2,11 @@ package org.grooscript.grails.plugin
 
 import grails.plugin.cache.Cacheable
 import org.grooscript.GrooScript
+import org.grooscript.grails.plugin.domain.DomainClass
+import org.grooscript.grails.plugin.remote.RemoteDomainClass
+
 import static org.grooscript.grails.util.Util.*
+import static grails.util.Holders.getGrailsApplication
 
 /**
  * User: jorgefrancoleza
@@ -11,17 +15,10 @@ import static org.grooscript.grails.util.Util.*
 class GrooscriptConverter {
 
     boolean canConvertModel
-    ListenerFileChangesDaemon modelChangesListener
     static final GROOVY_SOURCE_CODE = 'src/groovy'
 
-    def stopListeners() {
-        if (modelChangesListener) {
-            modelChangesListener.stop()
-        }
-    }
-
     @Cacheable('conversions')
-    String toJavascript(String groovyCode, options = null, cleanJsCode = true) {
+    String toJavascript(String groovyCode, options = null) {
         //println '****************************** CONVERSION!'
         String jsCode = ''
         if (groovyCode) {
@@ -34,9 +31,6 @@ class GrooscriptConverter {
 
                 jsCode = GrooScript.convert(groovyCode)
 
-                if (cleanJsCode) {
-                    jsCode = cleanUpConvertedCode(jsCode)
-                }
             } catch (e) {
                 consoleError "Error converting to javascript: ${e.message}"
             }
@@ -45,7 +39,54 @@ class GrooscriptConverter {
         jsCode
     }
 
-    def addGroovySourceClassPathIfNeeded(options) {
+    def convertDomainClass(String domainClassName, boolean remote = false) {
+        if (canConvertModel) {
+            convertDomainClassFile(domainClassName, remote)
+        } else {
+            consoleWarning "Can't convert model classes. Need at least Groovy 2.1.0"
+        }
+    }
+
+    String getDomainFilePath(String domainClass) {
+        def nameFilePath
+        def result = grailsApplication.domainClasses.find { it.fullName == domainClass || it.name == domainClass }
+        if (result) {
+            nameFilePath = "${DOMAIN_DIR}${SEP}${getPathFromClassName(result.clazz.canonicalName)}"
+        }
+        nameFilePath
+    }
+
+    private convertDomainClassFile(String domainClassName, boolean remote) {
+        try {
+            String domainFilePath = getDomainFilePath(domainClassName)
+            if (domainFilePath) {
+                try {
+                    GrooScript.clearAllOptions()
+                    if (remote) {
+                        GrooScript.setConversionProperty('customization', {
+                            ast(RemoteDomainClass)
+                        })
+                    } else {
+                        GrooScript.setConversionProperty('customization', {
+                            ast(DomainClass)
+                        })
+                    }
+                    GrooScript.setConversionProperty('classPath', [GROOVY_SOURCE_CODE])
+                    GrooScript.convert(domainFilePath, remote ? REMOTE_JS_DIR : DOMAIN_JS_DIR)
+                } catch (e) {
+                    consoleError 'GrooscriptConverter Error converting ' + e.message
+                }
+            } else {
+                //TODO delete this
+                consoleWarning 'Domain file not found ' + domainClassName
+            }
+        } catch (e) {
+            consoleError 'GrooscriptConverter Error creating domain class js file ' + e.message
+        }
+        GrooScript.clearAllOptions()
+    }
+
+    private addGroovySourceClassPathIfNeeded(options) {
         def conversionOptions = options ?: [:]
         if (!conversionOptions.classPath) {
             conversionOptions.classPath = []
@@ -60,7 +101,7 @@ class GrooscriptConverter {
         conversionOptions
     }
 
-    private cleanUpConvertedCode(String jsCode) {
-        jsCode.replaceAll(/this\./,'')
+    private getPathFromClassName(String className) {
+        "${className.replaceAll(/\./,SEP)}.groovy"
     }
 }

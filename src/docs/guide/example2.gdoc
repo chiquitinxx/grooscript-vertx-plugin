@@ -24,12 +24,12 @@ In BootStrap.groovy
     }
 {code}
 
-In gsp, kimbo is like jQuery:
+In gsp:
 {code}
 <html>
 <head>
   <title>Chat</title>
-    <r:require module="kimbo"/>
+    <r:require module="jquery"/>
     <r:layoutResources/>
 </head>
 <body>

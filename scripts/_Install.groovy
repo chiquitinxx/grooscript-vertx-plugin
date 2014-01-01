@@ -1,2 +1,3 @@
 ant.mkdir(dir:"${basedir}/test/phantomjs")
-new File("${basedir}/web-app/js/domainClasses.js").text = ''
+ant.mkdir(dir:"${basedir}/web-app/js/domain")
+ant.mkdir(dir:"${basedir}/web-app/js/remote")

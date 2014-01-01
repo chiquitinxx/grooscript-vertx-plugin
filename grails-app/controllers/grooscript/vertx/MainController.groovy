@@ -11,4 +11,6 @@ class MainController {
     def vertxEvents() { }
 
     def localEvents() { }
+
+    def model() { }
 }
