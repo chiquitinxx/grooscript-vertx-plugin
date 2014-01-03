@@ -17,14 +17,17 @@ class GrooscriptGrails {
         'gormPersistentEntity', 'properties', 'gormDynamicFinders', 'all', 'domainClass', 'attached',
         'validationErrorsMap', 'dirtyPropertyNames', 'errors', 'dirty', 'count']
 
-    static getRemoteDomainClassProperties(remoteDomainClass) {
-        return remoteDomainClass.metaClass.properties.inject([:]) { acc, property ->
-            if (!(property.name in GrooscriptGrails.GRAILS_PROPERTIES)) {
-                acc[property.name] = remoteDomainClass."${property.name}"
+    @GsNative
+    static getRemoteDomainClassProperties(remoteDomainClass) {/*
+        var data;
+        var result = gs.map();
+        for (data in remoteDomainClass) {
+            if ((typeof data !== "function") && !GrooscriptGrails.GRAILS_PROPERTIES.contains(data)) {
+                result.add(data, remoteDomainClass[data]);
             }
-            return acc
         }
-    }
+        return result;
+    */}
 
     @GsNative
     static sendClientMessage(String channel, message) {/*

@@ -1,25 +1,25 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <html>
 <head>
-    <title>Testing model</title>
+    <title>Testing remote model</title>
     <r:require module="jquery"/>
-    <r:require module="domain"/>
+    <r:require module="remoteDomain"/>
     <r:layoutResources/>
 </head>
 
 <body>
     <div id="info"></div>
-    <!--grooscript:model domainClass="org.grooscript.domain.DomainItem"/-->
+    <grooscript:remoteModel domainClass="org.grooscript.domain.DomainItem"/>
 
     <r:script>
         $(document).ready(function() {
             var domainItem = DomainItem();
             domainItem.name = 'grooscript';
-            if (domainItem.save()) {
-                $('#info').html('saved Ok, number of domain items: ' + DomainItem.count());
-            } else {
-                $('#info').html('Error!');
-            }
+            domainItem.save().then (function(data) {
+                $('#info').html('saved Ok!'+gs.toGroovy(data.data));
+            }, function(data) {
+                $('#info').html('Error! '+data);
+            })
         });
     </r:script>
 

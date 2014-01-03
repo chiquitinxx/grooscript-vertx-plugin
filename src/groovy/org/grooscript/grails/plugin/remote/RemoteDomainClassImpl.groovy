@@ -7,10 +7,7 @@ import org.codehaus.groovy.control.CompilePhase
 import org.codehaus.groovy.control.SourceUnit
 import org.codehaus.groovy.transform.ASTTransformation
 import org.codehaus.groovy.transform.GroovyASTTransformation
-import org.grooscript.grails.plugin.GrooscriptVertxService
-import org.grooscript.grails.plugin.promise.GsPromise
 import org.grooscript.grails.plugin.promise.RemotePromise
-import org.grooscript.grails.util.GrooscriptGrails
 
 import java.lang.reflect.Modifier
 

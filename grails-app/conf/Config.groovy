@@ -65,10 +65,19 @@ grails.resources.modules = {
     grooscript {
         resource url:'/js/grooscript.js'
     }
+    domain {
+        dependsOn 'grooscript'
+        resource url:'/js/domain/DomainItem.js'
+    }
+    remoteDomain {
+        dependsOn 'grooscriptGrails'
+        resource url:'/js/remote/DomainItem.js'
+    }
     grooscriptGrails {
         dependsOn 'grooscript'
         resource url:'/js/Builder.js'
         resource url:'/js/GrooscriptGrails.js'
+        resource url:'/js/RemotePromise.js'
     }
     clientEvents {
         dependsOn 'grooscriptGrails'

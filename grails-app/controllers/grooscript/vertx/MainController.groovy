@@ -13,4 +13,6 @@ class MainController {
     def localEvents() { }
 
     def model() { }
+
+    def remoteModel() { }
 }

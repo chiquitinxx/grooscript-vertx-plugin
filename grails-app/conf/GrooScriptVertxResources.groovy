@@ -13,6 +13,7 @@ modules = {
         dependsOn 'grooscript'
         resource url:'/js/Builder.js'
         resource url:'/js/GrooscriptGrails.js'
+        resource url:'/js/RemotePromise.js'
     }
     clientEvents {
         dependsOn 'grooscriptGrails'
