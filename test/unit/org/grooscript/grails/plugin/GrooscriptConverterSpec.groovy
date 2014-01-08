@@ -50,7 +50,11 @@ class GrooscriptConverterSpec extends Specification {
         1 * GrooScript.setConversionProperty('customization', _)
         1 * GrooScript.setConversionProperty('classPath', ['src/groovy'])
         1 * Util.getDOMAIN_JS_DIR()
+        1 * Util.getJS_DIR()
+        1 * Util.getSEP()
+        1 * Util.getDOMAIN_NAME()
         1 * GrooScript.convert(FILE_PATH, 'web-app/js/domain') >> true
+        1 * GrooScript.joinFiles('web-app/js/domain', 'web-app/js/domain.js')
         0 * _
 
         where:

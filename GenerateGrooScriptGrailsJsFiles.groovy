@@ -17,9 +17,11 @@ new File('web-app/js/ClientEventHandler.js').text += '\nvar grooscriptEvents = C
 GrooScript.setConversionProperty('customization', {
     ast(RemoteDomainClass)
 })
-GrooScript.convert('grails-app/domain/org/grooscript/domain/DomainItem.groovy', 'web-app/js/remote')
+GrooScript.convert('grails-app/domain/org/grooscript/domain/DomainItem.groovy', 'web-app/js/remoteDomain')
+GrooScript.joinFiles('web-app/js/remoteDomain','web-app/js/remoteDomain.js')
 
 GrooScript.setConversionProperty('customization', {
     ast(DomainClass)
 })
 GrooScript.convert('grails-app/domain/org/grooscript/domain/DomainItem.groovy', 'web-app/js/domain')
+GrooScript.joinFiles('web-app/js/domain','web-app/js/domain.js')

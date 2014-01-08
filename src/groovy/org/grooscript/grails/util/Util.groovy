@@ -9,11 +9,12 @@ class Util {
     static final SEP = System.getProperty('file.separator')
 
     static final String DOMAIN_NAME = 'domain'
-    static final String REMOTE_NAME = 'remote'
+    static final String REMOTE_NAME = 'remoteDomain'
     static final String GROOVY_DIR = "src${SEP}groovy"
     static final String DOMAIN_DIR = "grails-app${SEP}${DOMAIN_NAME}"
-    static final String DOMAIN_JS_DIR = "web-app${SEP}js${SEP}${DOMAIN_NAME}"
-    static final String REMOTE_JS_DIR = "web-app${SEP}js${SEP}${REMOTE_NAME}"
+    static final String JS_DIR = "web-app${SEP}js"
+    static final String DOMAIN_JS_DIR = "${JS_DIR}${SEP}${DOMAIN_NAME}"
+    static final String REMOTE_JS_DIR = "${JS_DIR}${SEP}${REMOTE_NAME}"
 
     static final PLUGIN_MESSAGE = '[GrooScript Vertx Plugin]'
 

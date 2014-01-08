@@ -160,8 +160,7 @@ class GrooScriptVertxTagLibSpec extends Specification {
         applyTemplate("<grooscript:model domainClass='${domainClassName}'/>")
 
         then:
-        numberTimes * resourceTaglib.require([module: 'grooscript'])
-        numberTimes * resourceTaglib.external(['uri':"/js/domain/${DOMAIN_CLASS_NAME}.js"])
+        numberTimes * resourceTaglib.require([module: 'domain'])
         numberTimes * grooscriptConverter.convertDomainClass(domainClassName)
         0 * _
 
@@ -184,8 +183,8 @@ class GrooScriptVertxTagLibSpec extends Specification {
 
         then:
         numberTimes * resourceTaglib.require([module: 'grooscriptGrails'])
+        numberTimes * resourceTaglib.require([module: 'remoteDomain'])
         numberTimes * resourceTaglib.script(_)
-        numberTimes * resourceTaglib.external([uri: "/js/remote/${DOMAIN_CLASS_NAME}.js"])
         numberTimes * grooscriptConverter.convertDomainClass(domainClassName, true)
         0 * _
 

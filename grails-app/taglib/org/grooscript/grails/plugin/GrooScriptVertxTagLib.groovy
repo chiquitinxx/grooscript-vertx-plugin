@@ -183,8 +183,7 @@ class GrooScriptVertxTagLib {
     def model = { attrs ->
         if (validDomainClassName(attrs.domainClass)) {
             grooscriptConverter.convertDomainClass(attrs.domainClass)
-            r.require(module: 'grooscript')
-            out << r.external(uri: "/js/${DOMAIN_NAME}/${shortDomainClassName(attrs.domainClass)}.js")
+            r.require(module: 'domain')
         }
     }
 
@@ -271,7 +270,7 @@ class GrooScriptVertxTagLib {
         if (validDomainClassName(attrs.domainClass)) {
             initGrooscriptGrails()
             grooscriptConverter.convertDomainClass(attrs.domainClass, true)
-            out << r.external(uri: "/js/${REMOTE_NAME}/${shortDomainClassName(attrs.domainClass)}.js")
+            r.require(module: 'remoteDomain')
         }
     }
 

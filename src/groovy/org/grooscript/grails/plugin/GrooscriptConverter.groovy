@@ -72,7 +72,9 @@ class GrooscriptConverter {
                         })
                     }
                     GrooScript.setConversionProperty('classPath', [GROOVY_SOURCE_CODE])
-                    GrooScript.convert(domainFilePath, remote ? REMOTE_JS_DIR : DOMAIN_JS_DIR)
+                    def targetDirectory = remote ? REMOTE_JS_DIR : DOMAIN_JS_DIR
+                    GrooScript.convert(domainFilePath, targetDirectory)
+                    GrooScript.joinFiles(targetDirectory, JS_DIR + SEP + (remote ? REMOTE_NAME : DOMAIN_NAME) + '.js')
                 } catch (e) {
                     consoleError 'GrooscriptConverter Error converting ' + e.message
                 }

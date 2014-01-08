@@ -15,6 +15,14 @@ modules = {
         resource url:'/js/GrooscriptGrails.js'
         resource url:'/js/RemotePromise.js'
     }
+    domain {
+        dependsOn 'grooscript'
+        resource url:'/js/domain.js'
+    }
+    remoteDomain {
+        dependsOn 'grooscriptGrails'
+        resource url:'/js/remoteDomain.js'
+    }
     clientEvents {
         dependsOn 'grooscriptGrails'
         resource url:'/js/ClientEventHandler.js'
