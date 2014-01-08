@@ -2,8 +2,6 @@
 <html>
 <head>
     <title>Testing remote model</title>
-    <r:require module="jquery"/>
-    <r:require module="remoteDomain"/>
     <r:layoutResources/>
 </head>
 

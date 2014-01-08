@@ -45,7 +45,7 @@
 <grooscript:onServerEvent name='testingIncoming'>
     console.log 'Got message in testingIncoming to json!' + JSON.stringify(message)
     console.log 'Got message in testingIncoming coming!' + message.toString()
-    console.log 'Got js!' + GrooscriptGrails.toJavascript(message)
+    console.log 'Got js!' + gs.toJavascript(message)
     $('#gotIncoming').text($('#gotIncoming').text() + '.')
 </grooscript:onServerEvent>
 <grooscript:onServerEvent name='testingIncoming'>

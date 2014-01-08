@@ -11,15 +11,6 @@ import spock.lang.Unroll
  */
 class DomainItemSpec extends IntegrationSpec {
 
-    def 'properties of domain class'() {
-        given:
-        def domainItem = new DomainItem()
-        def properties = GrooscriptGrails.getRemoteDomainClassProperties(domainItem)
-
-        expect:
-        properties == [date:null, id:null, name:null, number:null, version:null]
-    }
-
     @Unroll
     def 'get path of a valid domain class'() {
         given:

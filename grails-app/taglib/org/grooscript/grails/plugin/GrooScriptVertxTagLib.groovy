@@ -2,6 +2,8 @@ package org.grooscript.grails.plugin
 
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.grooscript.GrooScript
+import org.grooscript.grails.util.Util
+
 import static org.grooscript.grails.util.Util.*
 
 class GrooScriptVertxTagLib {
@@ -102,7 +104,7 @@ class GrooScriptVertxTagLib {
                     script += '\n' + body()
                 }
             } catch (e) {
-                log.error "GrooScriptVertxTagLib.code error reading file('${attrs.filePath}'): ${e.message}", e
+                Util.consoleError "GrooScriptVertxTagLib.code error reading file('${attrs.filePath}'): ${e.message}", e
             }
         } else {
             script = body()
@@ -131,14 +133,14 @@ class GrooScriptVertxTagLib {
             try {
                 script = new File(attrs.filePath).text
             } catch (e) {
-                log.error "GrooScriptVertxTagLib.template error reading file('${attrs.filePath}'): ${e.message}", e
+                Util.consoleError "GrooScriptVertxTagLib.template error reading file('${attrs.filePath}'): ${e.message}", e
             }
         } else {
             script = body()
         }
         if (script) {
             def functionName = attrs.functionName ?: 'fTemplate'+new Date().time.toString()
-            String jsCode = grooscriptConverter.toJavascript("Builder.process { -> ${script}}").trim()
+            String jsCode = grooscriptConverter.toJavascript("Builder.process { data = [:] -> ${script}}").trim()
 
             r.require(module: 'grooscript')
             initGrooscriptGrails()
@@ -268,7 +270,7 @@ class GrooScriptVertxTagLib {
     def remoteModel = { attrs ->
         if (validDomainClassName(attrs.domainClass)) {
             initGrooscriptGrails()
-            //grooscriptConverter.convertDomainClass(attrs.domainClass, true)
+            grooscriptConverter.convertDomainClass(attrs.domainClass, true)
             out << r.external(uri: "/js/${REMOTE_NAME}/${shortDomainClassName(attrs.domainClass)}.js")
         }
     }
@@ -283,12 +285,12 @@ class GrooScriptVertxTagLib {
 
     private validDomainClassName(String name) {
         if (!name || !(name instanceof String)) {
-            log.error "GrooScriptVertxTagLib.model: have to define domainClass property as a String"
+            Util.consoleError "GrooScriptVertxTagLib.model: have to define domainClass property as a String"
         } else {
             if (existDomainClass(name)) {
                 return true
             } else {
-                log.error "Not exist domain class ${name}"
+                Util.consoleError "Not exist domain class ${name}"
             }
         }
         return false
