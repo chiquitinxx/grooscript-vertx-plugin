@@ -1,4 +1,4 @@
-<plugin name='grooscript-vertx' version='0.4-SNAPSHOT' grailsVersion='2.2 &gt; *'>
+<plugin name='grooscript-vertx' version='0.4-SNAPSHOT' grailsVersion='2.0 &gt; *'>
   <author>Jorge Franco</author>
   <authorEmail>grooscript@gmail.com</authorEmail>
   <title>Grooscript Vertx Plugin</title>
@@ -27,9 +27,9 @@ Also use Vert.x to use events between server and gsps.
     </test>
     <compile>
       <dependency group='org.vert-x' name='vertx-lang-groovy' version='1.3.1.final' />
-      <dependency group='org.codehaus.gpars' name='gpars' version='1.0.0' />
-      <dependency group='org.codehaus.jsr166-mirror' name='jsr166y' version='1.7.0' />
       <dependency group='org.grooscript' name='grooscript' version='0.4.2' />
+      <dependency group='org.codehaus.jsr166-mirror' name='jsr166y' version='1.7.0' />
+      <dependency group='org.codehaus.gpars' name='gpars' version='1.0.0' />
     </compile>
   </dependencies>
   <plugins>
@@ -40,8 +40,8 @@ Also use Vert.x to use events between server and gsps.
       <plugin group='org.grails.plugins' name='cache' version='1.1.1' />
     </compile>
     <runtime>
-      <plugin group='org.grails.plugins' name='resources' version='1.2.1' />
       <plugin group='org.grails.plugins' name='jquery' version='1.10.2.2' />
+      <plugin group='org.grails.plugins' name='resources' version='1.2.1' />
     </runtime>
   </plugins>
   <runtimePluginRequirements>
