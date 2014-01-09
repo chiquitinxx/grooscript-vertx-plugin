@@ -16,3 +16,25 @@ You can put templates in separates files if you want to.
 You can define a jQuery selector with the elements that will be updated each time template renders.
 You can execute the template at start or when you want.
 The template can listen client events to renders again.
+
+You can pass a parameter to template, variable 'data' is available inside the tag.
+
+{code}
+<div id="list"></div>
+
+<grooscript:template renderOnReady="false" functionName="refreshList" itemSelector="#list">
+    ul {
+        data.each { book ->
+            li {
+                p 'Id: ' + book.id + ' Name: ' + book.title
+            }
+        }
+    }
+</grooscript:template>
+
+<grooscript:code>
+    $(document).ready({
+        refreshList([[id: 1, title:'Groovy in Action'], [id: 2, title:'Grails in Action']])
+    })
+</grooscript:code>
+{code}

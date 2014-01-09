@@ -1,0 +1,15 @@
+h1. remoteModel
+
+Use your domain classes in your browser, and change data in the server.
+
+{code}
+<grooscript:remoteModel domainClass="myPackage.Book"/>
+{code}
+
+@domainClass@ can be short name of the class or full name with package.
+
+All methods are a promise, and you need to define closures to success or failures.
+
+Also have to define permission to your domain classes in Config.groovy
+
+*Still experimental, and only works with grails 2.3.x *
