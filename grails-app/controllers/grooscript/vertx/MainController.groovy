@@ -2,9 +2,6 @@ package grooscript.vertx
 
 class MainController {
 
-    def grooscriptConverter
-    def eventBus
-
     def index() { }
 
     def test() { }
@@ -12,4 +9,10 @@ class MainController {
     def templating() { }
 
     def vertxEvents() { }
+
+    def localEvents() { }
+
+    def model() { }
+
+    def remoteModel() { }
 }

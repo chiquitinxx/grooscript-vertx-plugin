@@ -24,6 +24,8 @@ log4j = {
     warn   'org.mortbay.log'
 }
 
+grails.cache.enabled = false
+
 vertx {
     eventBus {
         port = 8086
@@ -44,13 +46,15 @@ grooscript {
     daemon {
         source = ['src/Message.groovy']
         destination = 'web-app/js'
+        doAfter = { data ->
+            if (data) {
+                println "List of converted files ${data}"
+            }
+        }
     }
 }
 
 grails.resources.modules = {
-    kimbo {
-        resource url:'/js/kimbo.min.js'
-    }
     sockjs {
         resource url:'/js/sockjs.js'
     }
@@ -61,14 +65,19 @@ grails.resources.modules = {
     grooscript {
         resource url:'/js/grooscript.js'
     }
-    domainClasses {
+    domain {
         dependsOn 'grooscript'
-        resource url:'/js/domainClasses.js'
+        resource url:'/js/domain.js'
+    }
+    remoteDomain {
+        dependsOn 'grooscriptGrails'
+        resource url:'/js/remoteDomain.js'
     }
     grooscriptGrails {
         dependsOn 'grooscript'
         resource url:'/js/Builder.js'
         resource url:'/js/GrooscriptGrails.js'
+        resource url:'/js/RemotePromise.js'
     }
     clientEvents {
         dependsOn 'grooscriptGrails'
@@ -76,7 +85,9 @@ grails.resources.modules = {
     }
 }
 
-grooscript.model = [ [name: 'org.grooscript.domain.DomainItem']]
+grooscript.model = [
+        [name: 'DomainItem', create: true, read: true, update: true, delete: { -> true}, list: true]
+]
 
 phantomjs.path = '/Applications/phantomjs'
 savedFiles.listener = ['web-app/css']

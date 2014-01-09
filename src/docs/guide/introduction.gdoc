@@ -6,10 +6,25 @@ This plugin need resources plugin to run, use @<r:layoutResources/>@ in your gsp
 
 h2. Important
 
-This plugin still in development. Is not production ready, Groovy code not need to be converted if your source
-files not changing. Javascript code have to be inserted in the pages.
+Work with domain classes still experimental, don't use in production. Need Grails 2.3 to try it.
+
+Grails 2.3 has changed test phases and phantomjs tests will not work in that version.
+
+Lot of times you have to define jquery dependency in your gsp's with resources plugin. dependsOn didn't work as I expected.
 
 h2. Requisites
 
 You need *Java 1.7+* to use Vert.x.
+
 You need Grails 2.3 to use GrooScript 'customization' conversion option.
+
+h2. what is new in 0.4
+
+- Starting support of domain classes.
+- Do remote calls to server with your 'groovy' objects.
+- Fix phantomjs tests in grails < 2.3.
+- Templating functions can have one parameter.
+- DomainClass AST has come to plugin from grooscript core.
+- Upgraded to grooscript 0.4.2
+- Conversions are now cached and you need cache plugin.
+- Lot of fixes.

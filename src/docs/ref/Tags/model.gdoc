@@ -1,0 +1,11 @@
+h1. model
+
+Use your domain classes in your browser without changes in the server.
+
+{code}
+<grooscript:model domainClass="Book"/>
+{code}
+
+@domainClass@ can be short name of the class or full name with package.
+
+*Still experimental, and only works with grails 2.3.x *

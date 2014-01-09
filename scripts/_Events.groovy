@@ -3,6 +3,14 @@ import org.codehaus.groovy.grails.test.support.GrailsTestMode
 
 // 1. add the name of your phase to this variable with this event handler
 eventAllTestsStart = {
+    loadPhantomJsTestType()
+}
+
+eventPackagePluginsEnd = {
+    loadPhantomJsTestType()
+}
+
+loadPhantomJsTestType = {
     phasesToRun << "phantomjs"
 }
 

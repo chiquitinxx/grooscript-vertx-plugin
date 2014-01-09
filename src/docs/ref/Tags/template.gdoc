@@ -31,3 +31,5 @@ Create a template that will be renderer in the client.
 @renderOnReady@ - optional defaults true - if template will be render onReady page event
 
 @listenEvents@ - optional - string list of events that render the page
+
+Need jquery to use this tag. This plugin has jquery plugin dependency.

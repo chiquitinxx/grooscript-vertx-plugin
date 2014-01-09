@@ -1,21 +1,27 @@
-@Grab('org.grooscript:grooscript:0.3.1')
+@Grab('org.grooscript:grooscript:0.4.2')
 
 import org.grooscript.GrooScript
+import org.grooscript.grails.plugin.domain.DomainClass
+import org.grooscript.grails.plugin.remote.RemoteDomainClass
+
+GrooScript.clearAllOptions()
 
 GrooScript.convert('src/groovy/org/grooscript/grails/util/Builder.groovy', 'web-app/js')
 GrooScript.convert('src/groovy/org/grooscript/grails/plugin/ClientEventHandler.groovy', 'web-app/js')
 GrooScript.convert('src/groovy/org/grooscript/grails/util/GrooscriptGrails.groovy', 'web-app/js')
+GrooScript.convert('src/groovy/org/grooscript/grails/plugin/promise/RemotePromise.groovy', 'web-app/js')
 
 new File('web-app/js/ClientEventHandler.js').text += '\nvar grooscriptEvents = ClientEventHandler();\n'
 
+//Convert domain class
 GrooScript.setConversionProperty('customization', {
-   ast(org.grooscript.asts.DomainClass)
-    //ast(TypeChecked)
+    ast(RemoteDomainClass)
 })
+GrooScript.convert('grails-app/domain/org/grooscript/domain/DomainItem.groovy', 'web-app/js/remoteDomain')
+GrooScript.joinFiles('web-app/js/remoteDomain','web-app/js/remoteDomain.js')
 
-new File('web-app/js/domain').mkdir()
-
-GrooScript.convert('grails-app/domain/org/grooscript/domain', 'web-app/js/domain')
-GrooScript.joinFiles('web-app/js/domain', 'web-app/js/domainClasses.js')
-
-new File('web-app/js/domain').deleteDir()
+GrooScript.setConversionProperty('customization', {
+    ast(DomainClass)
+})
+GrooScript.convert('grails-app/domain/org/grooscript/domain/DomainItem.groovy', 'web-app/js/domain')
+GrooScript.joinFiles('web-app/js/domain','web-app/js/domain.js')

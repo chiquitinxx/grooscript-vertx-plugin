@@ -8,71 +8,91 @@ import org.grooscript.asts.GsNative
  */
 class GrooscriptGrails {
 
+    static remoteUrl
+    static controllerRemoteDomain = 'remoteDomain'
+    static actionRemoteDomain = 'doAction'
+
+    static final GRAILS_PROPERTIES = ['classNameWithoutPackage', 'class',
+        'transients', 'constraints', 'mapping', 'hasMany', 'belongsTo', 'validationSkipMap',
+        'gormPersistentEntity', 'properties', 'gormDynamicFinders', 'all', 'domainClass', 'attached',
+        'validationErrorsMap', 'dirtyPropertyNames', 'errors', 'dirty', 'count']
+
+    @GsNative
+    static getRemoteDomainClassProperties(remoteDomainClass) {/*
+        var data;
+        var result = gs.map();
+        for (data in remoteDomainClass) {
+            if ((typeof data !== "function") && !GrooscriptGrails.GRAILS_PROPERTIES.contains(data)) {
+                result.add(data, remoteDomainClass[data]);
+            }
+        }
+        return result;
+    */}
+
     @GsNative
     static sendClientMessage(String channel, message) {/*
         var sendMessage = message;
-        if (message['gSclass'] == undefined) {
-            message = GrooscriptGrails.toGroovy(message);
+        if (!GrooscriptGrails.isGroovyObject(message)) {
+            sendMessage = gs.toGroovy(message);
         }
-        grooscriptEvents.sendMessage(channel, message);
+        grooscriptEvents.sendMessage(channel, sendMessage);
     */}
 
     @GsNative
     static sendServerMessage(String channel, message) {/*
         var sendMessage = message;
-        if (message['gSclass'] !== undefined) {
-            message = GrooscriptGrails.toJavascript(message);
+        if (GrooscriptGrails.isGroovyObject(message)) {
+            sendMessage = gs.toJavascript(message);
         }
-        grooscriptEventBus.send(channel, message);
+        grooscriptEventBus.send(channel, sendMessage);
     */}
 
     @GsNative
-    static toJavascript(message) {/*
-        var result;
-        if (message!=null && message!=undefined && typeof(message) !== "function") {
-            if (message instanceof Array) {
-                result = [];
-                var i;
-                for (i = 0; i < message.length; i++) {
-                    result[result.length] = GrooscriptGrails.toJavascript(message[i]);
-                }
-            } else {
-                if (message instanceof Object) {
-                    result = {};
-                    for (ob in message) {
-                        if (!isgSmapProperty(ob)) {
-                            result[ob] = GrooscriptGrails.toJavascript(message[ob]);
-                        }
-                    }
-                } else {
-                    result = message;
-                }
-            }
+    static doRemoteCall(String controller, String action, params, onSuccess, onFailure) {/*
+        var url = GrooscriptGrails.remoteUrl;
+        url = url + '/' + controller;
+        if (domainAction != null) {
+            url = url + '/' + domainAction;
         }
-        return result;
+        $.ajax({
+            type: "POST",
+            data: (GrooscriptGrails.isGroovyObject(params) ? gs.toJavascript(params) : params),
+            url: url
+        }).done(function(newData) {
+            onSuccess(newData);
+        })
+        .fail(function(error) {
+            onFailure(error);
+        });
     */}
 
     @GsNative
-    static toGroovy(message) {/*
-        var result;
-        if (message!=null && message!=undefined && typeof(message) !== "function") {
-            if (message instanceof Array) {
-                result = gSlist([]);
-                var i;
-                for (i = 0; i < message.length; i++) {
-                    result.add(GrooscriptGrails.toGroovy(message[i]));
-                }
+    static remoteDomainAction(params, onSuccess, onFailure) {/*
+        var url = GrooscriptGrails.remoteUrl + '/' + GrooscriptGrails.controllerRemoteDomain +
+            '/' + GrooscriptGrails.actionRemoteDomain;
+        $.ajax({
+            type: "POST",
+            data: (GrooscriptGrails.isGroovyObject(params) ? gs.toJavascript(params) : params),
+            url: url
+        }).done(function(newData) {
+            if (newData.result == 'OK') {
+                var successData = gs.toGroovy(newData.data);
+                onSuccess(successData);
             } else {
-                if (message instanceof Object) {
-                    result = gSmap();
-                    for (ob in message) {
-                        result.add(ob, GrooscriptGrails.toGroovy(message[ob]));
-                    }
-                } else {
-                    result = message;
+                if (onFailure != null) {
+                    onFailure(gs.toGroovy(newData.listErrors));
                 }
             }
-        }
-        return result;
+        })
+        .fail(function(error) {
+            if (onFailure != null) {
+                onFailure(error);
+            }
+        });
+    */}
+
+    @GsNative
+    private static boolean isGroovyObject(objectItem) {/*
+        return objectItem['clazz'] !== undefined;
     */}
 }

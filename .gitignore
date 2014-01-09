@@ -10,3 +10,10 @@ plugin.iml
 grooscript-0.3.2-SNAPSHOT.jar
 plugin-grailsPlugins.iml
 GrooscriptGrails.js
+help.txt
+lib/grooscript-0.4-SNAPSHOT.jar
+grails-grooscript-vertx-0.4-SNAPSHOT.zip
+web-app/js/RemotePromise.js
+web-app/js/domain/DomainItem.js
+web-app/js/remote/DomainItem.js
+*.sha1

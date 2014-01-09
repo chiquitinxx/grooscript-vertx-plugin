@@ -1,4 +1,4 @@
-grooscript-vertx-plugin 0.3
+grooscript-vertx-plugin 0.4
 ===========================
 
 Grails plugin to help develop with GrooScript and using vert.x for events between server and client.

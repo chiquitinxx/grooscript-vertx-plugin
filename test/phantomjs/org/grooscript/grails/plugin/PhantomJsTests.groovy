@@ -1,12 +1,13 @@
 package org.grooscript.grails.plugin
 
 import org.grooscript.asts.PhantomJsTest
+import org.grooscript.grails.plugin.test.PhantomJsCase
 
 /**
  * @author Jorge Franco
  * Date: 20/08/13
  */
-class PhantomJsTests extends GroovyTestCase {
+class PhantomJsTests extends PhantomJsCase {
 
     void setUp() {
     }
@@ -34,13 +35,29 @@ class PhantomJsTests extends GroovyTestCase {
 
     @PhantomJsTest(url='http://localhost:8080/grooscript-vertx/main/templating')
     void testTemplateOptions() {
-        assert $("#template1").html() != '','1->' +$ ("#template1").html() + '<'
-        assert $("#template2").html() != '','2->' +$ ("#template2").html() + '<'
-        assert $("#template3").html() == '','3->' +$ ("#template3").html() + '<'
+        assert $("#template1").html() != '','1->' +$("#template1").html() + '<'
+        assert $("#template2").html() != '','2->' +$("#template2").html() + '<'
+        assert $("#template3").html() == '','3->' +$("#template3").html() + '<'
+        assert $("#template4").html() == '<p>Hola from:Me to:You</p>','4->' +$("#template4").html() + '<'
     }
 
-    @PhantomJsTest(url = 'http://localhost:8080/grooscript-vertx/main/vertxEvents', waitSeconds = 2)
+    @PhantomJsTest(url = 'http://localhost:8080/grooscript-vertx/main/vertxEvents', waitSeconds = 3)
     void testWaitSeconds() {
-        assert $('#points').html() == '.',"points Html after is ${$('#points').html()}"
+        assert $('#points').html() == '.', "points Html after is >${$('#points').html()}<"
+    }
+
+    void testInMainController() {
+        phantomJs(controller: 'main', code: '''
+            println 'New cool test!'
+            assert true
+        ''')
+        assert true
+    }
+
+    @PhantomJsTest(url = 'http://localhost:8080/grooscript-vertx/main/localEvents', waitSeconds = 3)
+    void testLocalEventsWithRemoteDomainClass() {
+        assert $('#console').html() == '<p>Added a new Item!</p><p>Get item with id 1</p>' +
+                '<p>Update item!</p><p>Listed item!</p><p>Id:1 Name:Pepe</p><p>Item deleted!</p>',
+                "console Html is >${$('#console').html()}<"
     }
 }

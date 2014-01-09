@@ -7,6 +7,7 @@
 <html>
 <head>
   <title>Title Test</title>
+  <r:require module="jquery"/>
   <r:layoutResources/>
 </head>
 <body>
@@ -17,17 +18,15 @@
     <button type="button" id="addButton" onclick="grooscriptEvents.sendMessage('redraw',null);">Add</button>
 
     <grooscript:template listenEvents="['redraw']">
-        def number = numberTimes++
+        def number = numberTimes
+        numberTimes = numberTimes + 1
         h3 'Number of times: ' + number
         number.times { num ->
             p ' '+num
         }
     </grooscript:template>
 
-    <grooscript:model domainClass='org.grooscript.domain.DomainItem'/>
-
     <r:script>
-        var a = DomainItem();
         var numberTimes = 0;
     </r:script>
 

@@ -7,24 +7,32 @@ import static org.grooscript.grails.util.Util.*
 
 class GrooscriptVertxGrailsPlugin {
     // the plugin version
-    def version = "0.3"
+    def version = "0.4-SNAPSHOT"
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = "2.2 > *"
+    def grailsVersion = "2.0 > *"
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
         "grails-app/views/error.gsp",
-        "grails-app/controllers/**",
+        "grails-app/controllers/grooscript/vertx/**",
         "grails-app/domain/**",
         "grails-app/views/**",
         "src/Message.groovy",
         "src/groovy/MyTemplate.groovy",
+        "src/docs/**",
         "web-app/css/**",
         "web-app/images/**",
         "web-app/js/Message.js",
+        "web-app/js/application.js",
         "web-app/js/domainClasses.js",
         "web-app/js/testWithNode.js",
+        "web-app/js/domain.js",
+        "web-app/js/remoteDomain.js",
+        "web-app/js/remoteDomain/**",
         "web-app/js/domain/**"
     ]
+
+    def dependsOn = [resources: "1.2.1 > *",
+            cache: "1.1.1 > *", jquery: "1.10 > *"]
 
     def title = "Grooscript Vertx Plugin"
     def author = "Jorge Franco"
@@ -36,7 +44,7 @@ Also use Vert.x to use events between server and gsps.
 '''
 
     // URL to the plugin's documentation
-    def documentation = "http://grails.org/plugin/grooscript-vertx"
+    def documentation = "http://grooscript.org/pluginManual"
 
     def license = "APACHE"
 
@@ -50,11 +58,11 @@ Also use Vert.x to use events between server and gsps.
     def scm = [ url: "http://github.com/chiquitinxx/grooscript-vertx-plugin/" ]
 
     def doWithWebDescriptor = { xml ->
+        //Convert all domain files to javascript
     }
 
     static final GROOVY_VERSION_MODEL_REQUIRED = '2.1.0'
     static final JAVA_VERSION_VERTX_REQUIRED = '1.7'
-
 
     def doWithSpring = {
 
@@ -74,7 +82,9 @@ Also use Vert.x to use events between server and gsps.
                         application.config.vertx?.eventBus?.outboundPermitted?:[],
                         application.config.vertx?.testing ? true : false)
             } else {
-                consoleError 'You need at least Java 1.7 to run Vert.x'
+                if (application.config.vertx) {
+                    consoleWarning 'You need at least Java 1.7 to run Vert.x'
+                }
             }
         }
 
@@ -85,22 +95,22 @@ Also use Vert.x to use events between server and gsps.
         }
     }
 
-    def initGrooScriptDaemon(application) {
+    def initGrooscriptDaemon(application) {
 
         if (Environment.current == Environment.DEVELOPMENT) {
 
-            def doAfter = { list ->
-                if (list.size() > 0) {
+            def doAfterDefault = { listFiles ->
+                if (listFiles.size() > 0) {
                     sendReloadNotificationIfNeeded(application)
                 }
             }
 
-            launchFileChangesListeners(application, doAfter)
+            launchFileChangesListeners(application, doAfterDefault)
 
             def source = application.config.grooscript?.daemon?.source
             def destination = application.config.grooscript?.daemon?.destination
             def options = application.config.grooscript?.daemon?.options
-            def doAfterOption = application.config.grooscript?.daemon?.doAfter
+            def doAfterConfig = application.config.grooscript?.daemon?.doAfter
 
             //By default
             options = application.mainContext.grooscriptConverter.addGroovySourceClassPathIfNeeded(options)
@@ -109,13 +119,13 @@ Also use Vert.x to use events between server and gsps.
             if (source && destination) {
                 GrooScript.clearAllOptions()
                 def doAfterDaemon
-                if (doAfterOption && doAfterOption instanceof Closure) {
-                    doAfterDaemon = { list ->
-                        doAfter(list)
-                        doAfterDaemon(list)
+                if (doAfterConfig && doAfterConfig instanceof Closure) {
+                    doAfterDaemon = { listFilesList ->
+                        doAfterDefault(listFilesList)
+                        doAfterConfig(listFilesList)
                     }
                 } else {
-                    doAfterDaemon = doAfter
+                    doAfterDaemon = doAfterDefault
                 }
                 GrooScript.startConversionDaemon(source, destination, options, doAfterDaemon)
                 GrooScript.clearAllOptions()
@@ -137,10 +147,8 @@ Also use Vert.x to use events between server and gsps.
 
         if (Environment.current == Environment.DEVELOPMENT) {
             launchFileChangesListener(application, doAfter)
-            if (application.mainContext.grooscriptConverter.canConvertModel) {
-                //launchDomainFileChangesListener(application)
-            } else {
-                consoleError "You need at least Groovy ${GROOVY_VERSION_MODEL_REQUIRED} to work with the model."
+            if (!application.mainContext.grooscriptConverter.canConvertModel) {
+                consoleWarning "You need at least Groovy ${GROOVY_VERSION_MODEL_REQUIRED} to work with the model."
             }
         }
     }
@@ -167,50 +175,8 @@ Also use Vert.x to use events between server and gsps.
         }
     }
 
-    private launchDomainFileChangesListener(application) {
-
-        if (application.config.grooscript?.model) {
-            def listModelFiles = application.config.grooscript?.model
-            //println '1-'+listModelFiles
-            if (listModelFiles && listModelFiles instanceof List) {
-                new File(DOMAIN_JS_DIR).mkdirs()
-                ListenerFileChangesDaemon listener = new ListenerFileChangesDaemon(notifyAllChanges: true)
-                listener.sourceList = listModelFiles.inject ([]) { listNames, domainItem ->
-                    listNames << "${DOMAIN_DIR}${SEP}${domainItem.name.replaceAll(/\./,SEP)}.groovy"
-                    listNames
-                }
-                consoleMessage('Listen domain classes: '+listener.sourceList)
-                listener.nameListener = 'DOMAIN_CLASSES'
-                listener.doAfter = { list ->
-                    if (list) {
-                        list.each { String absolutePath ->
-                            GrooScript.clearAllOptions()
-                            GrooScript.setConversionProperty('customization', {
-                                ast(org.grooscript.asts.DomainClass)
-                            })
-                            GrooScript.setConversionProperty('classPath',[GROOVY_DIR, DOMAIN_DIR])
-                            try {
-                                GrooScript.convert(absolutePath, DOMAIN_JS_DIR)
-                                consoleMessage("Converted domain class: $absolutePath")
-                            } catch (e) {
-                                consoleError("Error converting $absolutePath: ${e.message}")
-                            }
-                            GrooScript.clearAllOptions()
-                        }
-                        GrooScript.joinFiles(DOMAIN_JS_DIR, DOMAIN_CLASSES_JS_FILE)
-                        if (list.size() != listModelFiles.size()) {
-                            sendReloadNotificationIfNeeded()
-                        }
-                    }
-                }
-                listener.start()
-                application.mainContext.grooscriptConverter.modelChangesListener = listener
-            }
-        }
-    }
-
     def doWithApplicationContext = { applicationContext ->
-        initGrooScriptDaemon(application)
+        initGrooscriptDaemon(application)
         if (applicationContext.eventBus && application.config.vertx?.testing) {
             applicationContext.eventBus.onEvent('testing', { message ->
                 if (message) {
@@ -237,7 +203,7 @@ Also use Vert.x to use events between server and gsps.
         if (applicationContext.eventBus) {
             applicationContext.eventBus.stopListeners()
         }
-        initGrooScriptDaemon(application)
+        initGrooscriptDaemon(application)
     }
 
     def onShutdown = { event ->

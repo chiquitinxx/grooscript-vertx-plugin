@@ -25,3 +25,5 @@ class PhantomJsTests extends GroovyTestCase {
 
 If you use in Spock, then annotate a private method, and then use from your Spock test.
 Spock @where:@ clause not working.
+
+*Grails 2.3 changed way to add tests phases and not working.*

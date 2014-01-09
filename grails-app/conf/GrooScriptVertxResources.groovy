@@ -1,7 +1,4 @@
 modules = {
-    kimbo {
-        resource url:'/js/kimbo.min.js'
-    }
     sockjs {
         resource url:'/js/sockjs.js'
     }
@@ -12,14 +9,19 @@ modules = {
     grooscript {
         resource url:'/js/grooscript.js'
     }
-    domainClasses {
-        dependsOn 'grooscript'
-        resource url:'/js/domainClasses.js'
-    }
     grooscriptGrails {
         dependsOn 'grooscript'
         resource url:'/js/Builder.js'
         resource url:'/js/GrooscriptGrails.js'
+        resource url:'/js/RemotePromise.js'
+    }
+    domain {
+        dependsOn 'grooscript'
+        resource url:'/js/domain.js'
+    }
+    remoteDomain {
+        dependsOn 'grooscriptGrails'
+        resource url:'/js/remoteDomain.js'
     }
     clientEvents {
         dependsOn 'grooscriptGrails'

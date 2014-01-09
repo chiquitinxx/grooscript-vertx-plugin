@@ -5,6 +5,7 @@ import grails.test.mixin.TestMixin
 import grails.test.mixin.support.GrailsUnitTestMixin
 import org.grails.plugin.resource.ResourceTagLib
 import spock.lang.Specification
+import spock.lang.Unroll
 
 /**
  * @author Jorge Franco
@@ -96,11 +97,10 @@ class GrooScriptVertxTagLibSpec extends Specification {
         def result = applyTemplate("<grooscript:template>assert true</grooscript:template>")
 
         then:
-        1 * resourceTaglib.script(_)
-        1 * resourceTaglib.require([module: 'kimbo'])
+        2 * resourceTaglib.script(_)
         1 * resourceTaglib.require([module: 'grooscript'])
         1 * resourceTaglib.require([module: 'grooscriptGrails'])
-        1 * grooscriptConverter.toJavascript('Builder.process { -> assert true}') >> ''
+        1 * grooscriptConverter.toJavascript('def gsTextHtml = { data -> Builder.process { -> assert true}}') >> ''
         0 * _
         result.startsWith "\n<div id='fTemplate"
     }
@@ -111,9 +111,9 @@ class GrooScriptVertxTagLibSpec extends Specification {
                 " itemSelector='#anyId' renderOnReady=\"${true}\">assert true</grooscript:template>")
 
         then:
-        1 * resourceTaglib.script(_)
+        2 * resourceTaglib.script(_)
         1 * grooscriptConverter.toJavascript(_) >> ''
-        3 * resourceTaglib.require(_)
+        2 * resourceTaglib.require(_)
         0 * _
         !result
     }
@@ -125,9 +125,9 @@ class GrooScriptVertxTagLibSpec extends Specification {
         def result = applyTemplate("<grooscript:template filePath='${FILE_PATH_TEMPLATE}'/>")
 
         then:
-        1 * resourceTaglib.script(_)
-        1 * grooscriptConverter.toJavascript("Builder.process { -> ${new File(FILE_PATH_TEMPLATE).text}}") >> ''
-        3 * resourceTaglib.require(_)
+        2 * resourceTaglib.script(_)
+        1 * grooscriptConverter.toJavascript("def gsTextHtml = { data -> Builder.process { -> ${new File(FILE_PATH_TEMPLATE).text}}}") >> ''
+        2 * resourceTaglib.require(_)
         0 * _
         result.startsWith "\n<div id='fTemplate"
     }
@@ -138,8 +138,8 @@ class GrooScriptVertxTagLibSpec extends Specification {
                 [events: ['redraw']])
 
         then:
-        2 * resourceTaglib.script(_)
-        3 * resourceTaglib.require(_)
+        3 * resourceTaglib.script(_)
+        2 * resourceTaglib.require(_)
         1 * grooscriptConverter.toJavascript(_) >> ''
         1 * resourceTaglib.require([module: 'clientEvents'])
         0 * _
@@ -147,7 +147,9 @@ class GrooScriptVertxTagLibSpec extends Specification {
 
     static final FAKE_NAME = 'FAKE'
     static final DOMAIN_CLASS_NAME = 'correctDomainClass'
+    static final DOMAIN_CLASS_NAME_WITH_PACKAGE = 'org.grooscript.correctDomainClass'
 
+    @Unroll
     void 'test model with domain class'() {
         given:
         GrooScriptVertxTagLib.metaClass.existDomainClass = { String name ->
@@ -158,12 +160,39 @@ class GrooScriptVertxTagLibSpec extends Specification {
         applyTemplate("<grooscript:model domainClass='${domainClassName}'/>")
 
         then:
-        numberTimes * resourceTaglib.require([module: 'domainClasses'])
+        numberTimes * resourceTaglib.require([module: 'domain'])
+        numberTimes * grooscriptConverter.convertDomainClass(domainClassName)
+        0 * _
 
         where:
-        domainClassName   | numberTimes
-        FAKE_NAME         | 0
-        DOMAIN_CLASS_NAME | 1
+        domainClassName                | numberTimes
+        FAKE_NAME                      | 0
+        DOMAIN_CLASS_NAME              | 1
+        DOMAIN_CLASS_NAME_WITH_PACKAGE | 1
+    }
+
+    @Unroll
+    void 'test remote model with domain class'() {
+        given:
+        GrooScriptVertxTagLib.metaClass.existDomainClass = { String name ->
+            name != FAKE_NAME
+        }
+
+        when:
+        applyTemplate("<grooscript:remoteModel domainClass='${domainClassName}'/>")
+
+        then:
+        numberTimes * resourceTaglib.require([module: 'grooscriptGrails'])
+        numberTimes * resourceTaglib.require([module: 'remoteDomain'])
+        numberTimes * resourceTaglib.script(_)
+        numberTimes * grooscriptConverter.convertDomainClass(domainClassName, true)
+        0 * _
+
+        where:
+        domainClassName                | numberTimes
+        FAKE_NAME                      | 0
+        DOMAIN_CLASS_NAME              | 1
+        DOMAIN_CLASS_NAME_WITH_PACKAGE | 1
     }
 
     private initVertx() {
@@ -177,8 +206,9 @@ class GrooScriptVertxTagLibSpec extends Specification {
         applyTemplate("<grooscript:onEvent name='nameEvent'>assert true</grooscript:onEvent>")
 
         then:
-        1 * resourceTaglib.script(_)
+        2 * resourceTaglib.script(_)
         1 * resourceTaglib.require([module: 'clientEvents'])
+        1 * resourceTaglib.require([module: 'grooscriptGrails'])
         0 * _
     }
 
@@ -190,7 +220,7 @@ class GrooScriptVertxTagLibSpec extends Specification {
         applyTemplate("<grooscript:onServerEvent name='nameEvent'>assert true</grooscript:onServerEvent>")
 
         then:
-        2 * resourceTaglib.script(_)
+        3 * resourceTaglib.script(_)
         1 * resourceTaglib.require([module: 'grooscriptGrails'])
         1 * resourceTaglib.require([module: 'vertx'])
         0 * _
@@ -204,7 +234,7 @@ class GrooScriptVertxTagLibSpec extends Specification {
         applyTemplate("<grooscript:onVertxStarted>assert true</grooscript:onVertxStarted>")
 
         then:
-        2 * resourceTaglib.script(_)
+        3 * resourceTaglib.script(_)
         1 * resourceTaglib.require([module: 'grooscriptGrails'])
         1 * resourceTaglib.require([module: 'vertx'])
         0 * _
