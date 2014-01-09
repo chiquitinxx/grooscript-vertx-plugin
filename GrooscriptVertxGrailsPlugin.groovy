@@ -9,7 +9,7 @@ class GrooscriptVertxGrailsPlugin {
     // the plugin version
     def version = "0.4-SNAPSHOT"
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = "2.2 > *"
+    def grailsVersion = "2.0 > *"
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
         "grails-app/views/error.gsp",
@@ -18,12 +18,16 @@ class GrooscriptVertxGrailsPlugin {
         "grails-app/views/**",
         "src/Message.groovy",
         "src/groovy/MyTemplate.groovy",
+        "src/docs/**",
         "web-app/css/**",
         "web-app/images/**",
         "web-app/js/Message.js",
+        "web-app/js/application.js",
         "web-app/js/domainClasses.js",
         "web-app/js/testWithNode.js",
-        "web-app/js/remote/**",
+        "web-app/js/domain.js",
+        "web-app/js/remoteDomain.js",
+        "web-app/js/remoteDomain/**",
         "web-app/js/domain/**"
     ]
 
@@ -54,7 +58,7 @@ Also use Vert.x to use events between server and gsps.
     def scm = [ url: "http://github.com/chiquitinxx/grooscript-vertx-plugin/" ]
 
     def doWithWebDescriptor = { xml ->
-        //Convert all files to javascript again
+        //Convert all domain files to javascript
     }
 
     static final GROOVY_VERSION_MODEL_REQUIRED = '2.1.0'

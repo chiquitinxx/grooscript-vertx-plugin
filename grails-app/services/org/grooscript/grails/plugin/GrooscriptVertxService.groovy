@@ -61,9 +61,9 @@ class GrooscriptVertxService {
         result
     }
 
-    private getDomainClass(String nameClass) {
+    def getDomainClass(String nameClass) {
         grailsApplication.domainClasses.find {
-            it.shortName == nameClass
+            it.fullName == nameClass || it.name == nameClass
         }
     }
 
@@ -144,7 +144,9 @@ class GrooscriptVertxService {
 
     def list(String domainClassName, ActionCommand actionCommand) {
         validateAction(domainClassName, actionCommand) {
-            result = domainClass?.referenceInstance?.list(actionCommand.data ?: [:])
+            def listDomain = domainClass?.referenceInstance?.list(actionCommand.data ?: [:])
+            actionCommand.data = [list: listDomain ?: []]
+            result = true
         }
     }
 

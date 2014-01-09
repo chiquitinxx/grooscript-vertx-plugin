@@ -27,16 +27,13 @@ class RemoteDomainClassImpl  implements ASTTransformation {
         if (classNode.hasProperty('id')) {
             return
         }
-        try {
-            addInstanceProperties(classNode)
 
-            addSaveMethod(classNode)
-            addDeleteMethod(classNode)
-            addStaticGetMethod(classNode)
-            addStaticListMethod(classNode)
-        } catch(e) {
-            println 'RemoteDomainClassImpl Exception:'+ e.message
-        }
+        addInstanceProperties(classNode)
+
+        addSaveMethod(classNode)
+        addDeleteMethod(classNode)
+        addStaticGetMethod(classNode)
+        addStaticListMethod(classNode)
     }
 
     private addInstanceProperties(ClassNode classNode) {
@@ -52,7 +49,7 @@ class RemoteDomainClassImpl  implements ASTTransformation {
         classNode.addMethod('get', Modifier.STATIC, new ClassNode(RemotePromise), params,
                 ClassNode.EMPTY_ARRAY, new AstBuilder().buildFromCode {
             return new org.grooscript.grails.plugin.promise.RemotePromise(domainAction: 'read',
-                className: this.classNameWithoutPackage, data: [id: value])
+                className: classNameWithoutPackage, data: [id: value])
         }[0])
     }
 
@@ -62,7 +59,7 @@ class RemoteDomainClassImpl  implements ASTTransformation {
         classNode.addMethod('list', Modifier.STATIC, new ClassNode(RemotePromise), params,
                 ClassNode.EMPTY_ARRAY, new AstBuilder().buildFromCode {
             return new org.grooscript.grails.plugin.promise.RemotePromise(domainAction: 'list',
-                    className: this.classNameWithoutPackage, data: params ?: [:])
+                    className: classNameWithoutPackage, data: params ?: [:])
         }[0])
     }
 

@@ -12,7 +12,7 @@ Also use Vert.x to use events between server and gsps.
     <resource>GrooScriptVertxCacheConfig</resource>
     <resource>GrooScriptVertxResources</resource>
     <resource>org.grooscript.grails.ActionCommand</resource>
-    <resource>org.grooscript.grails.DomainController</resource>
+    <resource>org.grooscript.grails.RemoteDomainController</resource>
     <resource>org.grooscript.grails.plugin.GrooscriptVertxService</resource>
     <resource>org.grooscript.grails.plugin.GrooScriptVertxTagLib</resource>
   </resources>
@@ -27,9 +27,9 @@ Also use Vert.x to use events between server and gsps.
     </test>
     <compile>
       <dependency group='org.vert-x' name='vertx-lang-groovy' version='1.3.1.final' />
-      <dependency group='org.codehaus.jsr166-mirror' name='jsr166y' version='1.7.0' />
       <dependency group='org.codehaus.gpars' name='gpars' version='1.0.0' />
-      <dependency group='org.grooscript' name='grooscript' version='0.4-SNAPSHOT' />
+      <dependency group='org.codehaus.jsr166-mirror' name='jsr166y' version='1.7.0' />
+      <dependency group='org.grooscript' name='grooscript' version='0.4.2' />
     </compile>
   </dependencies>
   <plugins>
@@ -41,11 +41,13 @@ Also use Vert.x to use events between server and gsps.
     </compile>
     <runtime>
       <plugin group='org.grails.plugins' name='resources' version='1.2.1' />
+      <plugin group='org.grails.plugins' name='jquery' version='1.10.2.2' />
     </runtime>
   </plugins>
   <runtimePluginRequirements>
     <plugin name='resources' version='1.2.1 &gt; *' />
     <plugin name='cache' version='1.1.1 &gt; *' />
+    <plugin name='jquery' version='1.10 &gt; *' />
   </runtimePluginRequirements>
   <behavior />
 </plugin>

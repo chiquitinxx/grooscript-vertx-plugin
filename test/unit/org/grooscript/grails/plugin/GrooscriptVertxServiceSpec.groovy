@@ -19,7 +19,7 @@ class GrooscriptVertxServiceSpec extends Specification {
 
     static final FAKE_NAME = 'fake domain class'
     static final GOOD_NAME = 'DomainItem'
-    static final UPDATED_NAME = 'UpdaItem'
+    static final UPDATED_NAME = 'UpdateItem'
     static final CAN_CREATE = true
     static final CAN_READ = false
     static final CAN_LIST = false
@@ -176,13 +176,14 @@ class GrooscriptVertxServiceSpec extends Specification {
     def 'success list a domain class'() {
         given:
         insertDomainClass()
+        def command = setupCommandWithDomain(LIST_ACTION, VALID_DOMAIN_ITEM_UPDATE)
 
         when:
-        def command = setupCommandWithDomain(LIST_ACTION, VALID_DOMAIN_ITEM_UPDATE)
         def result = service.list(command.className, command)
 
         then:
-        result == DomainItem.list()
+        1 * command.setData([list: DomainItem.list()])
+        result == true
     }
 
     def setupCommandWithDomain(action, data) {

@@ -76,13 +76,18 @@ class GrooscriptGrails {
             url: url
         }).done(function(newData) {
             if (newData.result == 'OK') {
-                onSuccess(newData);
+                var successData = gs.toGroovy(newData.data);
+                onSuccess(successData);
             } else {
-                onFailure(newData.listErrors);
+                if (onFailure != null) {
+                    onFailure(gs.toGroovy(newData.listErrors));
+                }
             }
         })
         .fail(function(error) {
-            onFailure(error);
+            if (onFailure != null) {
+                onFailure(error);
+            }
         });
     */}
 

@@ -140,7 +140,7 @@ class GrooScriptVertxTagLib {
         }
         if (script) {
             def functionName = attrs.functionName ?: 'fTemplate'+new Date().time.toString()
-            String jsCode = grooscriptConverter.toJavascript("Builder.process { data = [:] -> ${script}}").trim()
+            String jsCode = grooscriptConverter.toJavascript("def gsTextHtml = { data -> Builder.process { -> ${script}}}").trim()
 
             r.require(module: 'grooscript')
             initGrooscriptGrails()
@@ -152,8 +152,9 @@ class GrooScriptVertxTagLib {
             }
 
             r.script() {
-                out << "\nfunction ${functionName}() {\n"
-                out << "  var code = ${jsCode};\n"
+                out << "\nfunction ${functionName}(templateParams) {\n"
+                out << "  ${jsCode}\n"
+                out << "  var code = gsTextHtml(templateParams);\n"
                 out << "  \$('" + (attrs.itemSelector ? attrs.itemSelector : "#${functionName}") + "').html(code.html);\n"
                 out << '};\n'
                 if (!attrs.renderOnReady) {

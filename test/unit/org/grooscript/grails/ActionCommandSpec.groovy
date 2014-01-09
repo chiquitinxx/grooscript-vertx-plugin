@@ -51,6 +51,7 @@ class ActionCommandSpec extends Specification {
         READ_ACTION  | [:]  | 'any'     | true      | true       | true
         READ_ACTION  | [:]  | 'any'     | true      | false      | false
         READ_ACTION  | [:]  | 'any'     | false     | true       | false
+        LIST_ACTION  | null | 'any'     | true      | true       | true
     }
 
     @Unroll

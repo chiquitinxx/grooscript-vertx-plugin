@@ -1,5 +1,7 @@
 package org.grooscript.grails
 
+import org.grooscript.grails.plugin.GrooscriptVertxService
+
 class RemoteDomainController {
 
     static final OK = 'OK'
@@ -13,7 +15,8 @@ class RemoteDomainController {
 
         render(contentType:"text/json") {
             result = (validation && execution ? OK : KO)
-            data = command.data ?: 'ERROR'
+            data = (command.domainAction == GrooscriptVertxService.LIST_ACTION ?
+                    command.data.list : command.data)
             listErrors = grooscriptVertxService.getErrorsForClient(command, validation, execution)
             className = command.className
         }

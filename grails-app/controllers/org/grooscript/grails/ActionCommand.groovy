@@ -26,7 +26,9 @@ class ActionCommand {
             o.grooscriptVertxService.existDomainClass(value) &&
                     o.grooscriptVertxService.canDoActionWithDomainClass(value, o.domainAction)
         }
-        data nullable: false
+        data validator: { value, o ->
+            o.domainAction == GrooscriptVertxService.LIST_ACTION || value != null
+        }
         doingActionError nullable: true
     }
 
