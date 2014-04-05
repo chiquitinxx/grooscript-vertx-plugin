@@ -17,7 +17,7 @@ grails.project.dependency.resolution = {
         compile 'org.vert-x:vertx-lang-groovy:1.3.1.final'
         compile 'org.codehaus.jsr166-mirror:jsr166y:1.7.0'
         compile 'org.codehaus.gpars:gpars:1.0.0'
-        compile ('org.grooscript:grooscript:0.4.2') {
+        compile ('org.grooscript:grooscript:0.4.5') {
             exclude 'groovy'
         }
         test "org.spockframework:spock-grails-support:0.7-groovy-2.0"
@@ -26,15 +26,14 @@ grails.project.dependency.resolution = {
 
     plugins {
         runtime ":resources:1.2.1"
-        //runtime ":hibernate:$grailsVersion"
+        runtime ":hibernate:$grailsVersion"//REMOVE
 
-        build(//":tomcat:$grailsVersion",
+        build(":tomcat:$grailsVersion",//REMOVE
               ":release:2.2.1",
               ":rest-client-builder:1.0.3") {
             export = false
         }
 
-        //test ":resources:1.2.1"
         compile ":cache:1.1.1"
         runtime ":jquery:1.10.2.2"
 

@@ -68,8 +68,7 @@ function DomainItem() {
     };
   }
   gSobject.processChanges = function(x0) { return DomainItem.processChanges(x0); }
-  gSobject.DomainItem1 = function(map) { gs.passMapToObject(map,this); return this;};
-  if (arguments.length==1) {gSobject.DomainItem1(arguments[0]); }
+  if (arguments.length == 1) {gs.passMapToObject(arguments[0],gSobject);};
   
   return gSobject;
 };
@@ -109,7 +108,7 @@ DomainItem.processChanges = function(data) {
   var actionData = data;
   if (gs.bool(DomainItem.changeListeners)) {
     return gs.mc(DomainItem.changeListeners,"each",gs.list([function(it) {
-      return (it.delegate!=undefined?gs.applyDelegate(it,it.delegate,[actionData]):it(actionData));
+      return (it.delegate!=undefined?gs.applyDelegate(it,it.delegate,[actionData]):gs.executeCall(it, gs.list([actionData])));
     }]));
   } else {
     return null;

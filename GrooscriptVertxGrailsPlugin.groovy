@@ -1,13 +1,13 @@
+import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.grooscript.grails.plugin.GrooscriptConverter
 import org.grooscript.grails.plugin.ListenerFileChangesDaemon
-import org.grooscript.GrooScript
 import grails.util.Environment
 
 import static org.grooscript.grails.util.Util.*
 
 class GrooscriptVertxGrailsPlugin {
     // the plugin version
-    def version = "0.4"
+    def version = "0.4.5-SNAPSHOT"
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "2.0 > *"
     // resources that are excluded from plugin packaging
@@ -78,8 +78,8 @@ Also use Vert.x to use events between server and gsps.
                 }
 
                 eventBus(org.grooscript.grails.plugin.VertxEventBus, port, host,
-                        application.config.vertx?.eventBus?.inboundPermitted?:[],
-                        application.config.vertx?.eventBus?.outboundPermitted?:[],
+                        application.config.vertx?.eventBus?.inboundPermitted ?: [],
+                        application.config.vertx?.eventBus?.outboundPermitted ?: [],
                         application.config.vertx?.testing ? true : false)
             } else {
                 if (application.config.vertx) {
@@ -95,7 +95,7 @@ Also use Vert.x to use events between server and gsps.
         }
     }
 
-    def initGrooscriptDaemon(application) {
+    def initGrooscriptDaemon(GrailsApplication application) {
 
         if (Environment.current == Environment.DEVELOPMENT) {
 
@@ -109,28 +109,13 @@ Also use Vert.x to use events between server and gsps.
 
             def source = application.config.grooscript?.daemon?.source
             def destination = application.config.grooscript?.daemon?.destination
-            def options = application.config.grooscript?.daemon?.options
-            def doAfterConfig = application.config.grooscript?.daemon?.doAfter
-
-            //By default
-            options = application.mainContext.grooscriptConverter.addGroovySourceClassPathIfNeeded(options)
 
             //Start the daemon if source and destination are ok
-            if (source && destination) {
-                GrooScript.clearAllOptions()
-                def doAfterDaemon
-                if (doAfterConfig && doAfterConfig instanceof Closure) {
-                    doAfterDaemon = { listFilesList ->
-                        doAfterDefault(listFilesList)
-                        doAfterConfig(listFilesList)
-                    }
-                } else {
-                    doAfterDaemon = doAfterDefault
-                }
-                GrooScript.startConversionDaemon(source, destination, options, doAfterDaemon)
-                GrooScript.clearAllOptions()
+            if (source && destination && application.mainContext.grooscriptConverter) {
+                consoleMessage 'Starting Grooscript daemon ...'
+                application.mainContext.grooscriptConverter.startDaemon()
             } else {
-                consoleMessage "GrooScript daemon not started."
+                consoleMessage 'Grooscript daemon not started.'
             }
         }
     }
@@ -198,21 +183,20 @@ Also use Vert.x to use events between server and gsps.
 
 
     def onConfigChange = { event ->
-        GrooScript.stopConversionDaemon()
-        applicationContext.grooscriptConverter.stopListeners()
+        applicationContext.grooscriptConverter.stopDaemon()
         if (applicationContext.eventBus) {
             applicationContext.eventBus.stopListeners()
         }
-        initGrooscriptDaemon(application)
+        //initGrooscriptDaemon(application)
     }
 
     def onShutdown = { event ->
 
-        GrooScript.stopConversionDaemon()
-        application.grooscriptConverter.stopListeners()
+        applicationContext.grooscriptConverter.stopDaemon()
 
         if (applicationContext.eventBus) {
             consoleMessage 'Closing Vert.x ...'
+            applicationContext.eventBus.stopListeners()
             applicationContext.eventBus.close()
         }
     }

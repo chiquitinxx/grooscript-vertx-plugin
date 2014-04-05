@@ -2,6 +2,7 @@ package org.grooscript.grails.plugin
 
 import grails.plugin.cache.Cacheable
 import org.grooscript.GrooScript
+import org.grooscript.daemon.ConversionDaemon
 import org.grooscript.grails.plugin.domain.DomainClass
 import org.grooscript.grails.plugin.remote.RemoteDomainClass
 
@@ -16,6 +17,7 @@ class GrooscriptConverter {
 
     boolean canConvertModel
     static final GROOVY_SOURCE_CODE = 'src/groovy'
+    private ConversionDaemon conversionDaemon
 
     @Cacheable('conversions')
     String toJavascript(String groovyCode, options = null) {
@@ -54,6 +56,45 @@ class GrooscriptConverter {
             nameFilePath = "${DOMAIN_DIR}${SEP}${getPathFromClassName(result.clazz.canonicalName)}"
         }
         nameFilePath
+    }
+
+    void startDaemon() {
+
+        if (conversionDaemon) {
+            stopDaemon()
+        }
+
+        def doAfterDefault = { listFiles ->
+            if (listFiles.size() > 0) {
+                sendReloadNotificationIfNeeded(grailsApplication)
+            }
+        }
+
+        def source = grailsApplication.config.grooscript?.daemon?.source
+        def destination = grailsApplication.config.grooscript?.daemon?.destination
+
+        def doAfterConfig = grailsApplication.config.grooscript?.daemon?.doAfter
+
+        //By default
+        def options = grailsApplication.config.grooscript?.daemon?.options
+        options = addGroovySourceClassPathIfNeeded(options)
+
+        def doAfterDaemon
+        if (doAfterConfig && doAfterConfig instanceof Closure) {
+            doAfterDaemon = { listFilesList ->
+                doAfterDefault(listFilesList)
+                doAfterConfig(listFilesList)
+            }
+        } else {
+            doAfterDaemon = doAfterDefault
+        }
+        conversionDaemon = GrooScript.startConversionDaemon(source, destination, options, doAfterDaemon)
+    }
+
+    void stopDaemon() {
+        if (conversionDaemon) {
+            conversionDaemon.stop()
+        }
     }
 
     private convertDomainClassFile(String domainClassName, boolean remote) {
@@ -105,5 +146,13 @@ class GrooscriptConverter {
 
     private getPathFromClassName(String className) {
         "${className.replaceAll(/\./,SEP)}.groovy"
+    }
+
+    private sendReloadNotificationIfNeeded(application) {
+        if (application.mainContext.eventBus) {
+            application.mainContext.grailsResourceProcessor.reloadAll()
+            application.mainContext.eventBus.sendMessage(
+                    org.grooscript.grails.plugin.VertxEventBus.CHANNEL_RELOAD, [reload:true])
+        }
     }
 }

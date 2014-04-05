@@ -17,3 +17,5 @@ web-app/js/RemotePromise.js
 web-app/js/domain/DomainItem.js
 web-app/js/remote/DomainItem.js
 *.sha1
+web-app/js/remoteDomain.js
+web-app/js/remoteDomain/DomainItem.js
