@@ -17,11 +17,10 @@ class GrooscriptConverter {
 
     boolean canConvertModel
     static final GROOVY_SOURCE_CODE = 'src/groovy'
-    private ConversionDaemon conversionDaemon
+    ConversionDaemon conversionDaemon
 
     @Cacheable('conversions')
     String toJavascript(String groovyCode, options = null) {
-        //println '****************************** CONVERSION!'
         String jsCode = ''
         if (groovyCode) {
             GrooScript.clearAllOptions()
@@ -64,22 +63,38 @@ class GrooscriptConverter {
             stopDaemon()
         }
 
+        def config = grailsApplication.config
+
+        def source = config.grooscript?.daemon?.source
+        def destination = config.grooscript?.daemon?.destination
+
+        //By default
+        def options = config.grooscript?.daemon?.options
+        options = addGroovySourceClassPathIfNeeded(options)
+
+        conversionDaemon = GrooScript.startConversionDaemon(source, destination, options, closureToRunAfterDaemonConversion)
+    }
+
+    void stopDaemon() {
+        if (conversionDaemon) {
+            conversionDaemon.stop()
+        }
+    }
+
+    private Closure getClosureToRunAfterDaemonConversion() {
+
+        //Send reload notifications if needed
         def doAfterDefault = { listFiles ->
             if (listFiles.size() > 0) {
                 sendReloadNotificationIfNeeded(grailsApplication)
             }
         }
 
-        def source = grailsApplication.config.grooscript?.daemon?.source
-        def destination = grailsApplication.config.grooscript?.daemon?.destination
-
+        //Config option to do
         def doAfterConfig = grailsApplication.config.grooscript?.daemon?.doAfter
 
-        //By default
-        def options = grailsApplication.config.grooscript?.daemon?.options
-        options = addGroovySourceClassPathIfNeeded(options)
-
-        def doAfterDaemon
+        //Full action to do after some change
+        Closure doAfterDaemon
         if (doAfterConfig && doAfterConfig instanceof Closure) {
             doAfterDaemon = { listFilesList ->
                 doAfterDefault(listFilesList)
@@ -88,13 +103,7 @@ class GrooscriptConverter {
         } else {
             doAfterDaemon = doAfterDefault
         }
-        conversionDaemon = GrooScript.startConversionDaemon(source, destination, options, doAfterDaemon)
-    }
-
-    void stopDaemon() {
-        if (conversionDaemon) {
-            conversionDaemon.stop()
-        }
+        doAfterDaemon
     }
 
     private convertDomainClassFile(String domainClassName, boolean remote) {
@@ -149,9 +158,9 @@ class GrooscriptConverter {
     }
 
     private sendReloadNotificationIfNeeded(application) {
-        if (application.mainContext.eventBus) {
-            application.mainContext.grailsResourceProcessor.reloadAll()
-            application.mainContext.eventBus.sendMessage(
+        if (grailsApplication.mainContext.eventBus) {
+            grailsApplication.mainContext.grailsResourceProcessor.reloadAll()
+            grailsApplication.mainContext.eventBus.sendMessage(
                     org.grooscript.grails.plugin.VertxEventBus.CHANNEL_RELOAD, [reload:true])
         }
     }

@@ -1,13 +1,12 @@
 package org.grooscript.grails.plugin.domain
 
 import org.grooscript.GrooScript
-import spock.lang.Specification
 
 /**
  * User: jorgefrancoleza
  * Date: 28/01/13
  */
-class TestDomainClass extends Specification {
+class TestDomainClass extends GroovyTestCase {
 
     private static final NAME = 'name'
     private static final OTHER_NAME = 'other_name'
@@ -38,144 +37,184 @@ class TestDomainClass extends Specification {
         }
     }
 
-    def cleanup() {
+    void setUp() {
         AstItem.lastId = 0
         AstItem.listItems = []
         GrooScript.clearAllOptions()
     }
 
-    def 'test ast for domain classes'() {
-        given:
+    /*assertScript '''
+            import org.grooscript.grails.plugin.domain.DomainClass
+            import groovy.transform.ASTTest
+            import org.codehaus.groovy.ast.*
+            import org.codehaus.groovy.ast.expr.ConstantExpression
+            import static org.codehaus.groovy.ast.ClassHelper.*
+            import static org.codehaus.groovy.control.CompilePhase.*
+
+            @DomainClass('John Doe')
+            @ASTTest(phase=SEMANTIC_ANALYSIS, value={
+                assert node instanceof ClassNode
+                def fn = node.getDeclaredField('$AUTHOR')
+                assert fn instanceof FieldNode
+                assert fn.type == STRING_TYPE
+                assert fn.static
+                assert fn.public
+                assert fn.final
+                def initialExpr = fn.initialExpression
+                assert initialExpr instanceof ConstantExpression
+                assert initialExpr.text == 'John Doe'
+            })
+            class Foo {
+            }
+            assert Foo.$AUTHOR == 'John Doe'
+        '''*/
+    void testAnnotation() {
+        assertScript '''
+            import org.grooscript.grails.plugin.domain.DomainClass
+            @DomainClass
+            class Guy {
+                def name
+            }
+
+            def guy = new Guy(name: 'Jorge')
+            assert guy.name == 'Jorge'
+'''
+    }
+
+    void testPropertiesAdded() {
+        assertScript '''
+            import groovy.transform.ASTTest
+            import org.grooscript.grails.plugin.domain.DomainClass
+            import org.codehaus.groovy.ast.*
+            import org.codehaus.groovy.ast.expr.ListExpression
+            import static org.codehaus.groovy.ast.ClassHelper.*
+            import static org.codehaus.groovy.control.CompilePhase.*
+
+            @DomainClass
+            @ASTTest(phase=SEMANTIC_ANALYSIS, value={
+                assert node instanceof ClassNode
+                def id = node.getDeclaredField('id')
+                assert id instanceof FieldNode
+                assert id.type == Long_TYPE
+                def listItems = node.getDeclaredField('listItems')
+                assert listItems instanceof FieldNode
+                assert listItems.static
+                def initialExpr = listItems.initialExpression
+                assert initialExpr instanceof ListExpression
+            })
+            class Guy {
+                def name
+            }
+
+            assert !new Guy().id
+'''
+    }
+
+    void testDomainClassProperties() {
         def item = new AstItem()
 
-        expect:
-        //println item.properties
-        item.properties.containsKey('id')
-        AstItem.listItems == []
-        AstItem.lastId == 0
-        AstItem.listColumns.size() == 2
-        AstItem.listColumns.find{it.name==NAME}.name == NAME
-        AstItem.listColumns.find{it.name==NAME}.type == 'java.lang.String'
-        AstItem.listColumns.find{it.name==NAME}.constraints == [example:true]
-        AstItem.listColumns.find{it.name=='number'}.name == 'number'
-        AstItem.listColumns.find{it.name=='number'}.type == 'java.lang.Integer'
-        AstItem.listColumns.find{it.name=='number'}.constraints == [:]
-        item.metaClass.methods.find { it.name=='save'}
-        item.metaClass.methods.find { it.name=='delete'}
-        item.save()
+        assert AstItem.listItems == []
+        assert AstItem.lastId == 0
+        assert AstItem.listColumns.size() == 2
+        assert AstItem.listColumns.find{it.name==NAME}.name == NAME
+        assert AstItem.listColumns.find{it.name==NAME}.type == 'java.lang.String'
+        assert AstItem.listColumns.find{it.name==NAME}.constraints == [example:true]
+        assert AstItem.listColumns.find{it.name=='number'}.name == 'number'
+        assert AstItem.listColumns.find{it.name=='number'}.type == 'java.lang.Integer'
+        assert AstItem.listColumns.find{it.name=='number'}.constraints == [:]
+        assert item.metaClass.methods.find { it.name=='save'}
+        assert item.metaClass.methods.find { it.name=='delete'}
     }
 
-    def 'test get method'() {
-        given:
-        basicItem
+    void testGetMethod() {
+        def savedItem = basicItem
+        assert savedItem.id == 1
         def item = AstItem.get(1)
 
-        expect:
-        item.id
-        !AstItem.get(FAKE_ID)
+        assert item.id == 1
+        assert !AstItem.get(FAKE_ID)
     }
 
-    def 'test get method obtains a cloned object'() {
-        given:
+    void testGetMethodObtainsClonedObject() {
         basicItem
         def item = AstItem.get(1)
         def item2 = AstItem.list()[0]
 
-        when:
         item2.name = OTHER_NAME
 
-        then:
-        item.id == item2.id
-        item != item2
+        assert item.name == NAME
+        assert item.id == item2.id
+        assert item != item2
     }
 
-    def 'test create new item'() {
-        given:
-        AstItem.count() == 0
+    void testCreateNewItem() {
+
+        assert AstItem.count() == 0
         def item = new AstItem()
 
-        expect:
-        !item.id
-        AstItem.lastId == 0
+        assert !item.id
+        assert AstItem.lastId == 0
 
-        when:
         item."${NAME}" = VALUE
         def result = item.save()
 
-        then:
-        result == true
-        item.id == 1
-        AstItem.count() == 1
-        AstItem.listItems.size() == 1
-        AstItem.listItems[0]."${NAME}" == VALUE
-        AstItem.lastId == 1
+        assert result == true
+        assert item.id == 1
+        assert AstItem.count() == 1
+        assert AstItem.listItems.size() == 1
+        assert AstItem.listItems[0]."${NAME}" == VALUE
+        assert AstItem.lastId == 1
     }
 
-    def 'test update an item'() {
-        given:
+    void testUpdateItem() {
         def item = basicItem
 
-        expect:
-        item.name == NAME
+        assert item.name == NAME
 
-        when:
         item.name = VALUE
         item.save()
 
-        then:
-        AstItem.get(item.id).name == VALUE
-        AstItem.list()[0] == item
+        assert AstItem.get(item.id).name == VALUE
+        assert AstItem.list()[0] == item
     }
 
-    def 'test delete an item'() {
-        given:
+    void testDeleteAnItem() {
         AstItem item = getBasicItem()
 
-        expect:
-        AstItem.count() == 1
+        assert AstItem.count() == 1
 
-        when:
         item.delete()
 
-        then:
-        AstItem.count() == 0
-        !AstItem.list()
-        !AstItem.listItems
+        assert AstItem.count() == 0
+        assert !AstItem.list()
+        assert !AstItem.listItems
     }
 
-    def 'test change listener executed'() {
-        given:
+    void testChangeListenerExecuted() {
         def item = new AstItem()
         def value = 15
         item.changeListeners << { it -> println it; value = value * 2}
 
-        when:
         item."$NAME" = VALUE
         item.save()
 
-        then:
-        value == 30
+        assert value == 30
     }
 
-    def 'test blank validation'() {
-        given:
+    def testBlankValidation() {
         AstItemWithBlankValidation.count() == 0
         AstItemWithBlankValidation item = new AstItemWithBlankValidation()
 
-        expect:
-        !item.clientValidations()
-        !item.validate()
+        assert !item.clientValidations()
+        assert !item.validate()
 
-        and:
-        item.hasErrors()
-        item.errors == [name:'blank validation on value null']
+        assert item.hasErrors()
+        assert item.errors == [name:'blank validation on value null']
 
-        when:
         def result = item.save()
 
-        then:
-        !result
-        AstItemWithBlankValidation.count() == 0
+        assert !result
+        assert AstItemWithBlankValidation.count() == 0
     }
 
     private getBasicItem() {
