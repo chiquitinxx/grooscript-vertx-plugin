@@ -1,5 +1,11 @@
 grooscript-vertx-plugin 0.4
-===========================
+---------------------------
+
+**This plugin has been deprecated (June 2014)**
+
+**Only works with grails versions before 2.4**
+
+**For grails 2.4+ use [new plugin](http://github.com/chiquitinxx/grails-grooscript)**
 
 Grails plugin to help develop with GrooScript and using vert.x for events between server and client.
 
